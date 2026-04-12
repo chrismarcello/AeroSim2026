@@ -55,3 +55,5 @@ nunit-*.xml
 /.vs/AeroSim2026.slnx
 /AeroSim2026/db/aerosim2026.db
 /AeroSim2026/efpt.config.json
+/AeroSim2026/Properties/PublishProfiles
+/AeroSim2026/AeroSim2026.csproj.user

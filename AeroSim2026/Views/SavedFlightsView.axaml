@@ -1,0 +1,51 @@
+<rxui:ReactiveUserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:rxui="http://reactiveui.net"
+             xmlns:vm="using:AeroSim2026.ViewModels"
+             xmlns:ef="using:AeroSim2026.EFModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AeroSim2026.Views.SavedFlightsView"
+             x:CompileBindings="True"
+             x:DataType="vm:SavedFlightsViewModel"
+             x:TypeArguments="vm:SavedFlightsViewModel">
+    <Design.DataContext>
+        <vm:SavedFlightsViewModel/>
+    </Design.DataContext>
+  <StackPanel>
+        <TabControl>
+            <TabItem Header="Saved Flight Plans">
+                <DataGrid ItemsSource="{Binding UnflownFlights}"
+                  SelectedItem="{Binding SelectedUnflownFlight}"
+                AutoGenerateColumns="False" 
+                Height="800">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Date" Binding="{Binding DateCreated, x:DataType=ef:FlightPlan}" Width="*"/>
+            <DataGridTextColumn Header="Aircraft" Binding="{Binding AircraftModel.AircraftName, x:DataType=ef:FlightPlan}" Width="*"/>
+            <DataGridTextColumn Header="Origin" Binding="{Binding StartAirport.DisplayName, x:DataType=ef:FlightPlan}" Width="*"/>
+            <DataGridTextColumn Header="Destination" Binding="{Binding EndAirport.DisplayName, x:DataType=ef:FlightPlan}" />
+            <DataGridTextColumn Header="Distance" Binding="{Binding DistanceNm, x:DataType=ef:FlightPlan}" />
+            <DataGridTextColumn Header="Duration" Binding="{Binding DisplayEstTime, x:DataType=ef:FlightPlan}" />
+        </DataGrid.Columns>
+      </DataGrid>
+            </TabItem>
+            <TabItem Header="Flights Flown">
+                <DataGrid ItemsSource="{Binding FlownFlights}"
+                  SelectedItem="{Binding SelectedFlownFlight}"
+                AutoGenerateColumns="False" 
+                Height="400">
+          <DataGrid.Columns>
+              <DataGridTextColumn Header="Date" Binding="{Binding DateCreated, x:DataType=ef:FlightPlan}" Width="*"/>
+              <DataGridTextColumn Header="Aircraft" Binding="{Binding AircraftModel.AircraftName, x:DataType=ef:FlightPlan}" Width="*"/>
+              <DataGridTextColumn Header="Origin" Binding="{Binding StartAirport.DisplayName, x:DataType=ef:FlightPlan}" Width="*"/>
+              <DataGridTextColumn Header="Destination" Binding="{Binding EndAirport.DisplayName, x:DataType=ef:FlightPlan}" />
+              <DataGridTextColumn Header="Distance" Binding="{Binding DistanceNm, x:DataType=ef:FlightPlan}" />
+              <DataGridTextColumn Header="Duration" Binding="{Binding DisplayEstTime, x:DataType=ef:FlightPlan}" />
+              <DataGridTextColumn Header="Date Flown" Binding="{Binding DateFlown, x:DataType=ef:FlightPlan}" />
+          </DataGrid.Columns>
+      </DataGrid>
+            </TabItem>
+        </TabControl>
+    </StackPanel>
+</rxui:ReactiveUserControl>

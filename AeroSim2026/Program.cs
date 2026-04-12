@@ -19,6 +19,6 @@ namespace AeroSim2026
                 .UsePlatformDetect()
                 .WithInterFont()
                 .LogToTrace()
-                .UseReactiveUI();
+                .UseReactiveUI(builder => { });
     }
 }

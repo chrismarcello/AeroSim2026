@@ -1,20 +1,173 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:AeroSim2026.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ic="using:FluentIcons.Avalonia"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:vm="using:AeroSim2026.ViewModels"
         x:Class="AeroSim2026.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="AeroSim2026">
+        x:CompileBindings="True"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="60"
+        TransparencyLevelHint="Mica"
+        Background="{DynamicResource SystemRegionBrush}"
+        Icon="/Assets/AeroSim.ico">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
+    <Window.Styles>
+    <Style Selector="ScrollBar">
+        <Setter Property="AllowAutoHide" Value="False" />
+        <Setter Property="MinWidth" Value="14" /> </Style>
+    </Window.Styles>
+    <DockPanel>
+		<Border DockPanel.Dock="Bottom" 
+                Background="#007ACC" 
+                Height="30" 
+                Padding="15,0,15,3">
+            <Grid ColumnDefinitions="*, Auto, 150">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding StatusService.StatusMessage}" 
+                           VerticalAlignment="Center" 
+                           Foreground="White"
+                           FontSize="12"
+                           Margin="5,0,0,0"/>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <ProgressBar Grid.Column="2" 
+                             IsIndeterminate="True" 
+                             IsVisible="{Binding StatusService.IsBusy}"
+                             Height="10"
+                             VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+        <Grid DockPanel.Dock="Top" 
+              PointerPressed="TitleBar_PointerPressed" 
+              Background="Transparent" 
+              Height="60">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-</Window>
+            <Button Grid.Column="0" 
+                    Margin="10" 
+                    Padding="10"
+                    VerticalAlignment="Center" 
+                    Click="ToggleButton_Click"
+                    Background="Transparent">
+                <ic:SymbolIcon Symbol="Navigation" Width="24" Height="24"/>
+            </Button>
+
+            <TextBlock Grid.Column="1" 
+           Text="{Binding $parent[Window].Title}" 
+           VerticalAlignment="Center" 
+           HorizontalAlignment="Center" 
+           FontSize="16" 
+           FontWeight="SemiBold" 
+           IsHitTestVisible="False"/>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                
+                <Button Click="MinimizeButton_Click" Margin="5" Padding="12,8" Background="Transparent">
+                    <ic:SymbolIcon Symbol="Subtract" Width="20" Height="20" />
+                </Button>
+                
+                <Button Click="MaximizeButton_Click" Margin="5" Padding="12,8" Background="Transparent">
+                    <ic:SymbolIcon Symbol="SquareMultiple" Width="20" Height="20" />
+                </Button>
+                
+                <Button Click="App_Close_Click" Margin="5,5,10,5" Padding="12,8" Background="Transparent">
+                    <ic:SymbolIcon Symbol="Dismiss" Width="20" Height="20" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <Grid>
+			 <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" MinWidth="50" MaxWidth="200"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <!-- Sidebar -->
+            <StackPanel Grid.Column="0" 
+                        x:Name="MenuPanel" 
+                        IsVisible="False" 
+                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                        Width="200">
+
+                 <Button Command="{Binding NavigateCommand}" 
+                        CommandParameter="{Binding Pages[0]}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Background="Transparent"
+                        Margin="5,2"
+                        Padding="10">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <ic:SymbolIcon Symbol="Home" FontSize="20"/>
+                        <TextBlock Text="Home" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding NavigateCommand}" 
+                        CommandParameter="{Binding Pages[1]}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Background="Transparent"
+                        Margin="5,2"
+                        Padding="10">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <ic:SymbolIcon Symbol="Save" FontSize="20"/>
+                        <TextBlock Text="Saved Flights" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding NavigateCommand}" 
+                        CommandParameter="{Binding Pages[2]}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Background="Transparent"
+                        Margin="5,2"
+                        Padding="10">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <ic:SymbolIcon Symbol="Map" FontSize="20"/>
+                        <TextBlock Text="Flight Planner" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding NavigateCommand}" 
+                        CommandParameter="{Binding Pages[3]}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Background="Transparent"
+                        Margin="5,2"
+                        Padding="10">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <ic:SymbolIcon Symbol="AirplaneTakeOff" FontSize="20"/>
+                        <TextBlock Text="Random Flight" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Separator Margin="10,5" Background="{DynamicResource SystemControlForegroundBaseLowBrush}"/>                
+
+                <TextBlock VerticalAlignment="Center" Margin="15,10,0,5" Text="Theme:" FontWeight="SemiBold" Opacity="0.7"/>
+                <ComboBox x:Name="ThemeComboBox"
+                          SelectedIndex="0"
+                          SelectionChanged="ThemeComboBox_SelectionChanged"
+                          HorizontalAlignment="Stretch"
+                          Margin="10,0,10,10">
+                    <ComboBoxItem Content="System"/>
+                    <ComboBoxItem Content="Light"/>
+                    <ComboBoxItem Content="Dark"/>
+                </ComboBox>
+                
+            </StackPanel>
+            <!-- Main Content Area -->
+            <Grid Grid.Column="1">
+                <TransitioningContentControl Content="{Binding CurrentPage}"  />
+                <!-- Add main content here -->
+            </Grid>
+        </Grid>
+    </DockPanel>
+    </Window>
+

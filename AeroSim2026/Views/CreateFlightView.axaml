@@ -1,0 +1,224 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:AeroSim2026.ViewModels"
+             xmlns:mapsui="using:Mapsui.UI.Avalonia"
+             xmlns:local="using:AeroSim2026.Core.Converters"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="AeroSim2026.Views.CreateFlightView"
+             x:CompileBindings="False"
+             x:DataType="vm:CreateFlightViewModel"
+             x:Name="Root"
+             Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+             
+    <Design.DataContext>
+        <vm:CreateFlightViewModel/>
+    </Design.DataContext>
+    
+    <UserControl.Resources>
+        <local:AirportColorConverter x:Key="AirportColorConverter"/>
+    </UserControl.Resources>
+    
+    <Grid ColumnDefinitions="300, 4, *">
+
+        <Border Grid.Column="0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto, *">
+                <Border Grid.Row="0" Padding="4" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                    <Grid ColumnDefinitions="Auto, *, Auto">
+                        <TextBlock Grid.Column="0" Text="Airports" VerticalAlignment="Center" FontWeight="SemiBold" Margin="4,0"/>
+                        <TextBox Grid.Column="1" Watermark="Search..." Margin="4,0" Height="24" Padding="4,2" FontSize="12" Text="{Binding SearchText}"/>
+                    </Grid>
+                </Border>
+                
+                <ListBox Grid.Row="1" ItemsSource="{Binding FilteredAirports}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="10" CornerRadius="5">
+                                <Border.Background>
+                                    <MultiBinding Converter="{StaticResource AirportColorConverter}">
+                                        <Binding Path="."/> 
+                                        <Binding Path="$parent[UserControl].DataContext.OriginAirport"/>
+                                        <Binding Path="$parent[UserControl].DataContext.DestAirport"/>
+                                    </MultiBinding>
+                                </Border.Background>
+                                <Border.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Set as Origin" Command="{Binding $parent[UserControl].DataContext.SetOriginCommand}" CommandParameter="{Binding .}"/>
+                                        <MenuItem Header="Set as Destination" Command="{Binding $parent[UserControl].DataContext.SetDestCommand}" CommandParameter="{Binding .}"/>
+                                        <MenuItem Header="View on Map" Command="{Binding $parent[UserControl].DataContext.ViewOnMapCommand}" CommandParameter="{Binding .}"/>
+                                    </ContextMenu>
+                                </Border.ContextMenu>
+                                <Grid ColumnDefinitions="45, *, *">
+                                    <TextBlock Grid.Column="0" Text="{Binding Ident}" FontWeight="Bold" FontSize="12" />
+                                    <TextBlock Grid.Column="1" Text="{Binding AirportName}" Margin="5,0,0,0" TextWrapping="Wrap" FontSize="11" VerticalAlignment="Top"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding DisplayLocation}" TextWrapping="Wrap" FontSize="11"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns"/>
+
+        <Grid Grid.Column="2" RowDefinitions="2*, 4, *">
+
+            <Grid Grid.Row="0" ColumnDefinitions="2*, 4, *">
+
+                <Grid Grid.Column="0" RowDefinitions="Auto, *" MinHeight="300">
+                    <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" Padding="8,4" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="Flight Map" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" x:Name="MapContainer" ClipToBounds="True" Background="#111">
+                        <mapsui:MapControl x:Name="MapControl" Map="{Binding FlightMap}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                    </Border>
+                </Grid>
+
+                <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns"/>
+
+                <Border Grid.Column="2" Padding="10" 
+        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" 
+        BorderThickness="1,0,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="15">
+                            <TextBlock Text="Aircraft &amp; Cruise Altitude" FontWeight="SemiBold" FontSize="14"/>
+
+                            <StackPanel Spacing="15">
+                                <ComboBox ItemsSource="{Binding AircraftList}" SelectedItem="{Binding SelectedAircraft}" PlaceholderText="Choose an aircraft..." HorizontalAlignment="Stretch">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Aircraft.AircraftName}" FontWeight="Bold"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="Cruise Altitude (ft)" FontWeight="Bold"/>
+                                    <NumericUpDown Value="{Binding SelectedCruiseAltitude}" Minimum="0" Maximum="60000" Increment="500" FormatString="N0"/>
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <Separator Margin="0,10" />
+
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="Available Routes" FontWeight="SemiBold" Margin="0,0,0,5" />
+                                <ListBox ItemsSource="{Binding RouteOptions}" SelectedItem="{Binding SelectedRouteOption}" Background="Transparent" BorderThickness="0">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="4" Padding="10" Margin="0,2">
+                                                <StackPanel>
+                                                    <Grid ColumnDefinitions="*, Auto">
+                                                        <TextBlock Grid.Column="0" Text="{Binding Title}" FontWeight="Bold" Foreground="#3498db"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Distance, StringFormat='{}{0:N0} nm'}" FontSize="11" Foreground="Gray"/>
+                                                    </Grid>
+                                                    <TextBlock Text="{Binding RouteString}" TextWrapping="Wrap" FontSize="11" Margin="0,5,0,0"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+
+                            <Button Content="Save Flight Plan" Command="{Binding SaveFlightPlanCommand}" Background="#2e7d32" Foreground="White" FontWeight="Bold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,15,0,0"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+            
+            <GridSplitter Grid.Row="1" Background="Transparent" ResizeDirection="Rows"/>
+
+            <Grid Grid.Row="2" RowDefinitions="Auto, *">
+                <Border Grid.Row="0" Padding="4" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                         <TextBlock Text="Flight Details" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                         <Button Content="Build Flight Plan" Command="{Binding BuildFlightPathCommand}" Theme="{DynamicResource SolidAccentButtonTheme}" Padding="8,4" FontSize="12"/>
+                         <TextBlock Text="{Binding TotalDistance, StringFormat='{}{0:N0} nm'}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="15,0,0,0"/>
+                         <TextBlock Text="{Binding EstimatedTime, StringFormat='{}{0:hh}h {0:mm}m'}" FontSize="12" Foreground="Gray" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                
+                <Border Grid.Row="1" Background="#222" CornerRadius="5" Padding="10" Margin="0,10">
+                    <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, *">
+                        
+                        <TextBlock Grid.Column="0" Grid.Row="0" 
+           Text="{Binding SelectedAircraft.Aircraft.DisplayName, StringFormat='Aircraft: {0}'}" 
+           IsVisible="{Binding SelectedAircraft, Converter={x:Static ObjectConverters.IsNotNull}}" 
+           FontWeight="SemiBold" 
+           Margin="0,0,0,15" 
+           Foreground="#3498db" FontSize="14"/>
+
+<ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollBarVisibility="Auto" AllowAutoHide="False" MinHeight="240">
+    <ItemsControl ItemsSource="{Binding FullSelectedAircraft.Properties}">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Grid ColumnDefinitions="125, 60, *" Margin="0,5,10,5">
+                    <TextBlock Grid.Column="0" Text="{Binding PropertyName}" Foreground="Gray" FontSize="11" TextWrapping="NoWrap">
+                        <ToolTip.Tip>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Description}" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </ToolTip.Tip>
+                    </TextBlock>
+                    <TextBlock Grid.Column="1" Text="{Binding PropertyValue}" FontWeight="Bold" Foreground="White" />
+                    <TextBlock Grid.Column="2" Text="{Binding Unit}" FontStyle="Italic" Foreground="#888" Margin="5,0,0,0"/>
+                </Grid>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</ScrollViewer>
+
+                        <TextBlock Grid.Column="1" Grid.Row="0" Text="Airport Details" FontWeight="SemiBold" Margin="10,0,0,5" Foreground="White"/>
+                        
+                        <Grid Grid.Column="1" Grid.Row="1" ColumnDefinitions="*, *" Margin="10,0,0,0">
+                            <Border Grid.Column="0" BorderBrush="#333" BorderThickness="0,0,1,0" Padding="0,0,10,0">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="ORIGIN" FontSize="10" Foreground="Gray" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding OriginAirport.Ident, FallbackValue='----'}" FontWeight="Bold" Foreground="#3498db" FontSize="16"/>
+                                    
+                                    <TextBlock Text="{Binding OriginAirport.AirportName}" TextWrapping="Wrap" FontSize="11" Foreground="White"/>
+                                    <TextBlock Text="{Binding OriginAirport.DisplayLocation}" TextWrapping="Wrap" FontSize="11" Foreground="White"/>
+                                    
+                                    <Separator Background="#333" Margin="0,5"/>
+                                    
+                                    <Grid ColumnDefinitions="Auto, *, *" RowDefinitions="Auto, Auto">
+                                        <TextBlock Grid.Row="0" Text="Elev:" Foreground="Gray" Margin="0,0,5,0" FontSize="11"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding OriginAirport.Altitude}" FontSize="11" Foreground="White"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="2" Text=" ft" FontSize="11" Foreground="White"/>
+                                        <TextBlock Grid.Row="1" Text="Rwy:" Foreground="Gray" Margin="0,0,5,0" FontSize="11"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding OriginAirport.LongestRunwayLength}" FontSize="11" Foreground="White"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Text=" ft" FontSize="11" Foreground="White"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="5">
+                                <TextBlock Text="DESTINATION" FontSize="10" Foreground="Gray" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding DestAirport.Ident, FallbackValue='----'}" FontWeight="Bold" Foreground="#e74c3c" FontSize="16"/>
+                                
+                                <TextBlock Text="{Binding DestAirport.AirportName}" TextWrapping="Wrap" FontSize="11" Foreground="White"/>
+                                <TextBlock Text="{Binding DestAirport.DisplayLocation}" TextWrapping="Wrap" FontSize="11" Foreground="White"/>
+                                
+                                <Separator Background="#333" Margin="0,5"/>
+                                
+                                <Grid ColumnDefinitions="Auto, *, *" RowDefinitions="Auto, Auto">
+                                    <TextBlock Grid.Row="0" Text="Elev:" Foreground="Gray" Margin="0,0,5,0" FontSize="11"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DestAirport.Altitude}" FontSize="11" Foreground="White"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text=" ft" FontSize="11" Foreground="White"/>
+                                    <TextBlock Grid.Row="1" Text="Rwy:" Foreground="Gray" Margin="0,0,5,0" FontSize="11"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DestAirport.LongestRunwayLength}" FontSize="11" Foreground="White"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text=" ft" FontSize="11" Foreground="White"/>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

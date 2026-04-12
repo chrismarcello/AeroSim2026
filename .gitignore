@@ -53,3 +53,5 @@ CodeCoverage/
 TestResult.xml
 nunit-*.xml
 /.vs/AeroSim2026.slnx
+/AeroSim2026/db/aerosim2026.db
+/AeroSim2026/efpt.config.json

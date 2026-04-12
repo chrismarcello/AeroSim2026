@@ -1,0 +1,222 @@
+<rxui:ReactiveUserControl xmlns="https://github.com/avaloniaui"                          
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:rxui="http://reactiveui.net"
+             xmlns:mapsui="using:Mapsui.UI.Avalonia"
+             xmlns:vm="using:AeroSim2026.ViewModels"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             x:Class="AeroSim2026.Views.RandomFlightView"
+             x:DataType="vm:RandomFlightViewModel"
+             
+             x:TypeArguments="vm:RandomFlightViewModel">
+
+    <Design.DataContext>
+        <vm:RandomFlightViewModel/>
+    </Design.DataContext>
+
+   <ScrollViewer Padding="20" Margin="0">
+    <StackPanel Spacing="20">
+        
+        <TextBlock Text="Generate Random Flight" FontSize="26" FontWeight="SemiBold"/>
+
+        <Grid ColumnDefinitions="*, *, *" ColumnSpacing="20">
+    
+    <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" 
+            CornerRadius="6" Padding="20" VerticalAlignment="Top">
+        <StackPanel Spacing="12">
+            <StackPanel Spacing="4">
+                <TextBlock Text="Select Aircraft"/>
+                <ComboBox ItemsSource="{Binding AircraftList}" SelectedItem="{Binding SelectedAircraft}" DisplayMemberBinding="{Binding Aircraft.AircraftName}" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Continent"/>
+                <ComboBox ItemsSource="{Binding ContinentList}" SelectedItem="{Binding SelectedContinent}" DisplayMemberBinding="{Binding Name}" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Minimum Miles"/>
+                <NumericUpDown Value="{Binding MinMiles}" Minimum="0" Maximum="6000" Increment="50" FormatString="N0"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Maximum Miles"/>
+                <NumericUpDown Value="{Binding MaxMiles}" Minimum="0" Maximum="6000" Increment="50" FormatString="N0"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+
+    <Border Grid.Column="1" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" 
+            CornerRadius="6" Padding="20" VerticalAlignment="Top">
+        <StackPanel Spacing="12">
+            <StackPanel Spacing="4">
+                <TextBlock Text="Departure Airport Type"/>
+                <ComboBox ItemsSource="{Binding AirportTypeList}" SelectedItem="{Binding SelectedDepartAirportType}" DisplayMemberBinding="{Binding AirportTypeTitle}" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Departure Airport Ident"/>
+                <TextBox Text="{Binding DepartureAirportIdent}" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Cruise Altitude (ft)"/>
+                <NumericUpDown Value="{Binding CruiseAltitude}" Minimum="0" Maximum="60000" Increment="500" FormatString="N0"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+
+    <Border Grid.Column="2" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" 
+            CornerRadius="6" Padding="20" VerticalAlignment="Top">
+        <StackPanel Spacing="12">
+            <StackPanel Spacing="4">
+                <TextBlock Text="Arrival Airport Type"/>
+                <ComboBox ItemsSource="{Binding AirportTypeList}" SelectedItem="{Binding SelectedArrivalAirportType}" DisplayMemberBinding="{Binding AirportTypeTitle}" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+
+            <StackPanel Spacing="8" Margin="0,5,0,0">
+                <CheckBox IsChecked="{Binding HasIls}" Content="Requires ILS Approach"/>
+                <CheckBox IsChecked="{Binding IsMilitary}" Content="Allow Military Destinations"/>
+            </StackPanel>
+
+            <Separator Margin="0,15,0,15" Background="Gray" Opacity="0.5"/>
+
+            <StackPanel Orientation="Horizontal" Spacing="15">
+    
+            <Button 
+                Command="{Binding GenerateNewFlightCommand}" 
+                Background="#81D4FA" 
+                Foreground="Black" 
+                FontWeight="SemiBold"
+                Padding="15,8"
+                CornerRadius="4">
+                <StackPanel x:Name="GenerateButton" Orientation="Horizontal" Spacing="8">
+                    <ic:SymbolIcon Symbol="AirplaneTakeOff" FontSize="24"/>
+                    <TextBlock Text="Generate Flight" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <Button Content="Clear" 
+                Command="{Binding ClearFormCommand}" 
+                Background="#E0E0E0" 
+                Foreground="Black" 
+                FontWeight="SemiBold"
+                Padding="15,8"
+                CornerRadius="4"/>
+            
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Grid>
+<StackPanel IsVisible="{Binding HasGeneratedFlight}" Margin="0,15,0,0">
+        
+        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" 
+                CornerRadius="8" Padding="15"
+                x:CompileBindings="False">
+            <Grid RowDefinitions="*, Auto"> 
+
+                <Grid ColumnDefinitions="*, *, 650">
+                    <StackPanel Grid.Column="0" Margin="15" Spacing="10">
+						<TextBlock FontSize="18" FontWeight="Bold">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0} to {1}: {2} NMI">
+                                <Binding Path="CurrentFlight.DepartIdent" />
+                                <Binding Path="CurrentFlight.DestIdent" />
+                                <Binding Path="CurrentFlight.DistanceNm" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <TextBlock Text="{Binding CurrentFlight.EstFlightTime, StringFormat='{}Estimated Flight Time: {0}'}" />
+                    <Button Grid.Column="1" 
+                            Command="{Binding SaveFlightCommand}"
+                            CommandParameter="{Binding CurrentFlight}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <ic:SymbolIcon Symbol="Save" FontSize="20"/>
+                            <TextBlock Text="Save Flight" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    </StackPanel>
+    <StackPanel Grid.Column="1" Margin="15" Spacing="10">
+        <TextBlock Text="Flight Path Selection" FontSize="20" FontWeight="Bold" Margin="0,0,10,10"/>
+        <Grid ColumnDefinitions="*, Auto">
+        <Label Grid.Column="0" Content="Select Flight Path" VerticalAlignment="Center"/>
+        <Button Grid.Column="1"                  
+                Command="{Binding CalculateRoutesCommand}" 
+                Padding="10,4"
+                Background="#E0E0E0">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <ic:SymbolIcon Symbol="CompassNorthwest" FontSize="20"/>
+                <TextBlock Text="Calculate Routes" VerticalAlignment="Center"/> 
+            </StackPanel>
+        </Button>
+    </Grid>
+
+    <ComboBox ItemsSource="{Binding FlightPaths}" 
+              SelectedItem="{Binding SelectedFlightPath}"
+              HorizontalAlignment="Stretch">
+        <ComboBox.ItemTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding Title}" />
+            </DataTemplate>
+        </ComboBox.ItemTemplate>
+    </ComboBox>
+    <ListBox ItemsSource="{Binding SelectedFlightPath.WaypointDetails}" 
+             Height="180" 
+             Margin="0,10,0,0"
+             Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+             CornerRadius="4"
+             BorderBrush="Gray"
+             BorderThickness="1">
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="14" Margin="5,2"/>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+    </ListBox>
+    <Separator Margin="0,10" />
+</StackPanel>
+
+    <Border Grid.Column="2" 
+        x:Name="MapContainer" 
+        Height="350" 
+        Width="650"
+        HorizontalAlignment="Left"
+        Margin="5" 
+        CornerRadius="4" 
+        BorderThickness="1" 
+        BorderBrush="Gray" 
+        ClipToBounds="True" />
+</Grid>
+                
+
+                <Grid Grid.Row="2" ColumnDefinitions="*, *" ColumnSpacing="20">
+                    <Border Grid.Column="0" Padding="10" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" CornerRadius="4">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Departure Airport" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <TextBlock Text="{Binding CurrentFlight.DepartIdent, StringFormat='{}Ident: {0}'}" />
+                            <TextBlock Text="{Binding CurrentFlight.DepartAirport, StringFormat='{}Airport: {0}'}" />
+                            <TextBlock Text="{Binding CurrentFlight.DepartDisplayLocation}" />
+                            <TextBlock Text="{Binding CurrentFlight.DepartAltitude, StringFormat='{}Elevation: {0}'}" />
+                            <TextBlock Text="{Binding CurrentFlight.DepartLongestRunway, StringFormat='{}Longest Runway: {0} ft.'}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1" Padding="10" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}" CornerRadius="4">
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="Arrival Airport" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <TextBlock Text="{Binding CurrentFlight.DestIdent, StringFormat='{}Ident: {0}'}" />
+                            <TextBlock Text="{Binding CurrentFlight.DestAirport, StringFormat='{}Airport: {0}'}" />
+                            <TextBlock Text="{Binding CurrentFlight.DestDisplayLocation}" />
+                            <TextBlock Text="{Binding CurrentFlight.DestAltitude, StringFormat='{}Elevation: {0}'}" />
+                            <TextBlock Text="{Binding CurrentFlight.DestLongestRunway, StringFormat='{}Longest Runway: {0} ft.'}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+    </StackPanel>
+
+    </StackPanel>
+</ScrollViewer>
+</rxui:ReactiveUserControl>

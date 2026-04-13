@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:AeroSim2026.ViewModels"
              xmlns:mapsui="using:Mapsui.UI.Avalonia"
+             xmlns:ic="using:FluentIcons.Avalonia"
              xmlns:local="using:AeroSim2026.Core.Converters"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
              x:Class="AeroSim2026.Views.CreateFlightView"
@@ -124,8 +125,35 @@
                                     </ListBox.ItemTemplate>
                                 </ListBox>
                             </StackPanel>
-
-                            <Button Content="Save Flight Plan" Command="{Binding SaveFlightPlanCommand}" Background="#2e7d32" Foreground="White" FontWeight="Bold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,15,0,0"/>
+                            <Grid Margin="0,15,0,0" ColumnDefinitions="*,*">
+            <Button Grid.Column="0"                    
+                    Command="{Binding BuildFlightPathCommand}" 
+                    Theme="{DynamicResource SolidAccentButtonTheme}" 
+                    Padding="8,4" 
+                    FontWeight="Bold" 
+                    HorizontalAlignment="Left" 
+                    HorizontalContentAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Stretch">
+                    <ic:FluentIcon Icon="Directions" FontSize="16" VerticalAlignment="Center"/>
+                    <TextBlock Text="Build Flight Path" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+                    
+            <Button Grid.Column="1" 
+                Command="{Binding SaveFlightPlanCommand}" 
+                Theme="{DynamicResource SolidAccentButtonTheme}" 
+                Padding="8,4" 
+                FontWeight="Bold" 
+                HorizontalAlignment="Right" 
+                HorizontalContentAlignment="Center">
+    
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Stretch">
+                <ic:FluentIcon Icon="Save" FontSize="16" VerticalAlignment="Center"/>
+                <TextBlock Text="Save Flight Plan" VerticalAlignment="Center"/>
+            </StackPanel>
+    
+            </Button>
+        </Grid>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
@@ -136,8 +164,7 @@
             <Grid Grid.Row="2" RowDefinitions="Auto, *">
                 <Border Grid.Row="0" Padding="4" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                         <TextBlock Text="Flight Details" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                         <Button Content="Build Flight Plan" Command="{Binding BuildFlightPathCommand}" Theme="{DynamicResource SolidAccentButtonTheme}" Padding="8,4" FontSize="12"/>
+                         <TextBlock Text="Flight Details" VerticalAlignment="Center" FontWeight="SemiBold"/>                         
                          <TextBlock Text="{Binding TotalDistance, StringFormat='{}{0:N0} nm'}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="15,0,0,0"/>
                          <TextBlock Text="{Binding EstimatedTime, StringFormat='{}{0:hh}h {0:mm}m'}" FontSize="12" Foreground="Gray" VerticalAlignment="Center"/>
                     </StackPanel>

@@ -5,7 +5,7 @@
              xmlns:rxui="http://reactiveui.net"
              xmlns:mapsui="using:Mapsui.UI.Avalonia"
              xmlns:vm="using:AeroSim2026.ViewModels"
-             
+             xmlns:ic="using:FluentIcons.Avalonia"
              x:Class="AeroSim2026.Views.FlightDetailView"
              x:DataType="vm:FlightDetailViewModel"
              
@@ -43,11 +43,6 @@
         <Border Grid.Column="1" Padding="20" BorderBrush="#3E3E42" BorderThickness="1,0">
             <StackPanel Spacing="20">
                 
-                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                    <Button Content="Edit Flight" Command="{Binding BeginEditCommand}" IsVisible="{Binding !IsEditing}"/>
-                    <Button Content="Save" Command="{Binding SaveCommand}" IsVisible="{Binding IsEditing}" Background="#00F260" Foreground="Black" FontWeight="Bold"/>
-                    <Button Content="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsEditing}"/>
-                </StackPanel>
 
                 <Border x:Name="MapContainer" Height="400" CornerRadius="5" ClipToBounds="True" BorderBrush="#444" BorderThickness="1" />
 
@@ -73,7 +68,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="20">
                         <StackPanel Classes="DataCell">
                             <TextBlock Text="AIRCRAFT" Classes="DataHeader"/>
-                            <TextBlock Text="{Binding Flight.AircraftModel.AircraftName}" Classes="DataValue"/>
+                            <TextBlock Text="{Binding Flight.AircraftModel.DisplayName}" Classes="DataValue"/>
                         </StackPanel>
 
                         <StackPanel Classes="DataCell">
@@ -88,7 +83,7 @@
                         
                         <StackPanel Classes="DataCell">
                             <TextBlock Text="DATE FLOWN" Classes="DataHeader"/>
-                            <TextBlock Text="{Binding EditDateFlown, StringFormat='{}{0:MM/dd/yy}'}" Classes="DataValue" IsVisible="{Binding !IsEditing}"/>
+                            <TextBlock Text="{Binding EditDateFlown, StringFormat='{}{0:MM/dd/yyyy}'}" Classes="DataValue" IsVisible="{Binding !IsEditing}"/>
                                 <CalendarDatePicker SelectedDate="{Binding EditDateFlown}" IsVisible="{Binding IsEditing}" Watermark="Select Date"/>
                         </StackPanel>
                     </StackPanel>
@@ -106,13 +101,33 @@
 
                         <StackPanel Classes="DataCell">
                             <TextBlock Text="CRUISE ALTITUDE" Classes="DataHeader"/>
-                            <TextBlock Text="{Binding EditCruiseAltitude, StringFormat='{}FL{0}'}" Classes="DataValue" IsVisible="{Binding !IsEditing}"/>
+                            <TextBlock Text="{Binding EditCruiseAltitude, StringFormat='{}{0} ft.'}" Classes="DataValue" IsVisible="{Binding !IsEditing}"/>
                                 <NumericUpDown Value="{Binding EditCruiseAltitude}" Minimum="0" Maximum="60000" Increment="500" FormatString="0" IsVisible="{Binding IsEditing}"/>
                         </StackPanel> 
 
                         <StackPanel Classes="DataCell">
                             <TextBlock Text="DATE CREATED" Classes="DataHeader"/>
-                            <TextBlock Text="{Binding Flight.DateCreated, StringFormat='{}{0:MM/dd/yy}'}" Classes="DataValue"/>
+                            <TextBlock Text="{Binding Flight.DateCreated, StringFormat='{}{0:MM/dd/yyyy}'}" Classes="DataValue"/>
+                        </StackPanel>
+                        <StackPanel Classes="DataCell">
+                            <Button Command="{Binding BeginEditCommand}" IsVisible="{Binding !IsEditing}" Background="Transparent" FontWeight="Bold">
+								<StackPanel Orientation="Horizontal" Spacing="10">
+                                    <ic:SymbolIcon Symbol="Edit" FontSize="20"/>
+                                    <TextBlock Text="Edit" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding SaveCommand}" IsVisible="{Binding IsEditing}" Background="Transparent" FontWeight="Bold">
+								<StackPanel Orientation="Horizontal" Spacing="10">
+                                    <ic:SymbolIcon Symbol="Save" FontSize="20"/>
+                                    <TextBlock Text="Save" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding CancelCommand}" IsVisible="{Binding IsEditing}" Background="Transparent" FontWeight="Bold">
+								<StackPanel Orientation="Horizontal" Spacing="10">
+                                    <ic:FluentIcon Icon="DismissCircle" FontSize="20" />
+                                    <TextBlock Text="Cancel" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>

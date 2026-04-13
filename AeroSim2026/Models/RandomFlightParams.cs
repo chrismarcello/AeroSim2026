@@ -22,6 +22,6 @@ namespace AeroSim2026.Models
         public Coordinates? Coordinates { get; set; }
         public bool HasIls { get; set; } = false;
         public bool IsMilitary { get; set; } = false;
-        public int CruiseAltitude { get; set; } = 0;
+        public int CruiseAltitude { get; set; } = 5000;
     }
 }

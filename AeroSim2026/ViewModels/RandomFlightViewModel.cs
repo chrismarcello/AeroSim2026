@@ -37,7 +37,7 @@ namespace AeroSim2026.ViewModels
         // New Boolean Parameters
         private bool _hasIls;
         private bool _isMilitary;
-        private int _cruiseAltitude;
+        private int _cruiseAltitude = 5000;
 
         public SimAircraft? SelectedAircraft
         {

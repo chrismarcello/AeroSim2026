@@ -294,8 +294,8 @@ namespace AeroSim2026.ViewModels
             });
 
             this.WhenAnyValue(x => x.SelectedRouteOption)
-    .ObserveOn(RxSchedulers.MainThreadScheduler) // <--- CRITICAL: Forces UI Thread
-    .Subscribe(route =>
+                .ObserveOn(RxSchedulers.MainThreadScheduler) // <--- CRITICAL: Forces UI Thread
+                .Subscribe(route =>
     {
         if (route != null)
         {

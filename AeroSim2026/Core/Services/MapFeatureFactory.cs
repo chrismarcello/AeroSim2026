@@ -21,8 +21,9 @@ namespace AeroSim2026.Core.Services
             string? assetUri = navType?.ToUpper() switch
             {
                 "AIRPORT" => "avares://AeroSim2026/Assets/Icons/p-o-i-solid_Red.png",
-                "VOR" => "avares://AeroSim2026/Assets/Icons/circle-small-24-filled_.png",
-                "NDB" => "avares://AeroSim2026/Assets/Icons/circle-small-24-filled_.png",
+                "VOR" => "avares://AeroSim2026/Assets/svg/vor.svg",
+                "NDB" => "avares://AeroSim2026/Assets/svg/ndb.svg",
+                "WAYPOINT" => "avares://AeroSim2026/Assets/svg/waypoint.svg",
                 _ => null
             };
 

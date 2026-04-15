@@ -12,9 +12,24 @@ namespace AeroSim2026.ViewModels
         // --- Header Properties ---
         public string DepartIdent { get; }
         public string DestIdent { get; }
-        public double DistanceNm { get; }
-        public string? EstFlightTime { get; }
-
+        //public double DistanceNm { get; }
+        //public string? EstFlightTime { get; }
+        private double _distanceNm;
+        public double DistanceNm
+        {
+            get => _distanceNm;
+            set => this.RaiseAndSetIfChanged(ref _distanceNm, value);
+        }
+        private TimeSpan? _estFlightTimeSpan;
+        public TimeSpan? EstFlightTimeSpan
+        {
+            get => _estFlightTimeSpan;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _estFlightTimeSpan, value);
+                this.RaisePropertyChanged(nameof(EstFlightTimeFormatted)); // Notify that the formatted string has changed
+            }
+        }
         // --- Departure Properties ---
         public string DepartAirport { get; }
         public string DepartCity { get; }
@@ -31,6 +46,7 @@ namespace AeroSim2026.ViewModels
         public int? DestLongestRunway { get; }
         public int? DestAltitude { get; }
 
+        public string EstFlightTimeFormatted => EstFlightTimeSpan.HasValue ? EstFlightTimeSpan.Value.ToString(@"hh\:mm") : "00:00";
         public FlightItemViewModel(GeneratedFlight flight)
         {
             OriginalFlight = flight;
@@ -39,7 +55,7 @@ namespace AeroSim2026.ViewModels
             DepartIdent = flight.OriginAirport?.Ident ?? "N/A";
             DestIdent = flight.ArrivalAirport?.Ident ?? "N/A";
             DistanceNm = Math.Round(flight.DistanceNm ?? 0, 1);
-            EstFlightTime = flight.EstFlightTime.HasValue ? flight.EstFlightTime.Value.ToString(@"hh\:mm") : "00:00";
+            EstFlightTimeSpan = flight.EstFlightTime;
 
             // Departure Details
             DepartAirport = flight.OriginAirport?.AirportName ?? "Unknown Airport";

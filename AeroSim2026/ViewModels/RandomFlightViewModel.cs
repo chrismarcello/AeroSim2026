@@ -160,7 +160,13 @@ namespace AeroSim2026.ViewModels
                 (aircraft, min, max) => aircraft != null && (max == 0 || max > min)
                 );
             GenerateNewFlightCommand = ReactiveCommand.CreateFromTask(GenerateNewFlightAsync, canGenerateFlight);
-            CalculateRoutesCommand = ReactiveCommand.CreateFromTask(CalculateRoutesAsync);
+
+            var canCalculateRoutes = this.WhenAnyValue(x => x.CurrentFlight)
+    .Select(flight => flight != null)
+    .ObserveOn(RxSchedulers.MainThreadScheduler);
+
+            CalculateRoutesCommand = ReactiveCommand.CreateFromTask(CalculateRoutesAsync, canCalculateRoutes);
+
             SaveFlightCommand = ReactiveCommand.CreateFromTask<FlightItemViewModel>(SaveFlightAsync);
             ClearFormCommand = ReactiveCommand.Create(ClearForm);
 
@@ -173,6 +179,10 @@ namespace AeroSim2026.ViewModels
     {
         if (selectedPath != null && MapViewModel != null && CurrentFlight != null)
         {
+            CurrentFlight.DistanceNm = selectedPath.Distance;
+            int speed = (int)(CurrentFlight.OriginalFlight.PlannedSpeed ?? 150);
+            CurrentFlight.EstFlightTimeSpan = _navigationServices.CalculateEte(selectedPath.Distance, speed);
+
             var origin = CurrentFlight.OriginalFlight.OriginAirport;
             var dest = CurrentFlight.OriginalFlight.ArrivalAirport;
 
@@ -216,8 +226,7 @@ namespace AeroSim2026.ViewModels
 
             // 5. Pass to MapViewModel
             MapViewModel.UpdateRoute(routeFeature, markerFeatures);
-        }
-    });
+        }});
         }
 
         private async void LoadDropdownDataAsync()
@@ -281,6 +290,8 @@ namespace AeroSim2026.ViewModels
                 var origin = CurrentFlight.OriginalFlight.OriginAirport;
                 var dest = CurrentFlight.OriginalFlight.ArrivalAirport;
                 var altitude = CruiseAltitude > 0 ? CruiseAltitude : 5000;
+
+                await _flightServices.BuildCorridorGraphAsync(origin, dest);
 
                 var flightPathResult = await Task.Run(() =>
                 {
@@ -397,7 +408,7 @@ namespace AeroSim2026.ViewModels
                     EndAirportId = dest.AirportId,
                     CruiseAltitude = CruiseAltitude > 0 ? CruiseAltitude : 5000,
                     DistanceNm = (int)Math.Round(itemToSave.DistanceNm),
-                    EstFlightTime = itemToSave.OriginalFlight.EstFlightTime,
+                    EstFlightTime = itemToSave.EstFlightTimeSpan, // Pull from the updated property
                     Comments = SelectedFlightPath != null ? $"Route: {SelectedFlightPath.RouteString}" : "Direct",
                     FlightPlanRoutes = new List<FlightPlanRoute>()
                 };

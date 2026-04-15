@@ -69,14 +69,14 @@ namespace AeroSim2026.ViewModels
         private async void InitializeApplicationData()
         {
             StatusService.IsBusy = true;
-            StatusService.StatusMessage = "Loading Navigational Data...";
+            StatusService.StatusMessage = "Warming up...";
 
             // Load the graph in the background so the UI doesn't freeze on startup
-            await Task.Run(async () =>
-            {
-                await _navigationServices.InitializeRoutingGraphAsync(_routingGraph);
-            });
-
+            //await Task.Run(async () =>
+            //{
+            //    await _navigationServices.InitializeRoutingGraphAsync(_routingGraph);
+            //});
+            await Task.Delay(500); // Simulate some startup delay
             StatusService.IsBusy = false;
             StatusService.StatusMessage = "Ready";
         }

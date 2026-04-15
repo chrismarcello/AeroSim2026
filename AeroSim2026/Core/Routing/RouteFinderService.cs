@@ -30,7 +30,7 @@ namespace AeroSim2026.Core.Routing
             // Route 2: Airway Preferred (high penalty for direct GPS routing, lower penalty for staying on airways)
             var airwayEdges = FindRoute(startNode, endNode, cruiseAltitude, switchPenalty: 5.0, directMultiplier: 3.0);
 
-            if (airwayEdges != null && airwayEdges.Count > 0 && !AreRoutesIdentical(standardEdges, airwayEdges))
+            if (airwayEdges != null && airwayEdges.Count > 0 && !AreRoutesIdentical(standardEdges!, airwayEdges))
             {
                 routes.Add(BuildProposedRoute("Airway Preferred", airwayEdges, startNode));
             }

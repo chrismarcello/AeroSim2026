@@ -103,6 +103,9 @@
                                     <TextBlock Text="Cruise Altitude (ft)" FontWeight="Bold"/>
                                     <NumericUpDown Value="{Binding SelectedCruiseAltitude}" Minimum="0" Maximum="60000" Increment="500" FormatString="N0"/>
                                 </StackPanel>
+                                <StackPanel Spacing="5">
+                                    <Button Command="{Binding ClearFormCommand}" Content="Clear Form" Theme="{DynamicResource SolidAccentButtonTheme}" Padding="8,4"                     FontWeight="Bold" HorizontalAlignment="Right" HorizontalContentAlignment="Center"/>
+                                </StackPanel>
                             </StackPanel>
                             
                             <Separator Margin="0,10" />

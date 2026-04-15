@@ -17,9 +17,18 @@ namespace AeroSim2026.Core.Routing
         /// </summary>
         /// 
         // In RoutingGraph.cs
-        public void BuildGraph(List<Airway> allAirways)
+        public void BuildGraph(List<Airway> allAirways, Dictionary<int, string> navTypeLookup = null)
         {
             _nodes.Clear();
+
+            string GetTrueNavType(int waypointId, Waypoint defaultWp)
+            {
+                if (navTypeLookup != null && navTypeLookup.TryGetValue(waypointId, out var mappedType))
+                {
+                    return mappedType;
+                }
+                return defaultWp?.WaypointType ?? "W";
+            }
 
             foreach (var airway in allAirways)
             {
@@ -32,7 +41,7 @@ namespace AeroSim2026.Core.Routing
                         Identifier = airway.FromWaypoint?.Ident ?? "FIX",
                         Latitude = airway.FromLaty,
                         Longitude = airway.FromLonx,
-                        NavType = airway.FromWaypoint?.WaypointType ?? "W"
+                        NavType = GetTrueNavType(airway.FromWaypointId, airway.FromWaypoint!)
                     };
                 }
 
@@ -45,7 +54,7 @@ namespace AeroSim2026.Core.Routing
                         Identifier = airway.ToWaypoint?.Ident ?? "FIX",
                         Latitude = airway.ToLaty,
                         Longitude = airway.ToLonx,
-                        NavType = airway.FromWaypoint?.WaypointType ?? "W"
+                        NavType = GetTrueNavType(airway.ToWaypointId, airway.ToWaypoint!)
                     };
                 }
 

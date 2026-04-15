@@ -33,6 +33,10 @@ namespace AeroSim2026.ViewModels
         private readonly FlightRouteBuilder _flightRouteBuilder;
         private readonly RoutingGraph _routingGraph;
         private readonly IMapFeatureFactory _mapFeatureFactory; // NEW FACTORY INJECTED
+        private ILayer? _majorAirportsLayer;
+        private ILayer? _regionalAirportsLayer;
+        private ILayer? _smallAirportsLayer;
+        private ILayer? _milAirportsLayer;
 
         private List<Airport> _airports = new();
 
@@ -110,6 +114,7 @@ namespace AeroSim2026.ViewModels
         public ReactiveCommand<Airport, Unit> ViewOnMapCommand { get; }
         public ReactiveCommand<Unit, Unit> BuildFlightPathCommand { get; }
         public ReactiveCommand<Unit, Unit> SaveFlightPlanCommand { get; }
+        public ReactiveCommand<Unit, Unit> ClearFormCommand { get; }
 
         private const string CruiseSpeedPropertyId = "b7257438-0d1e-11f1-8f56-00155dcf273e";
 
@@ -136,7 +141,15 @@ namespace AeroSim2026.ViewModels
                 .Where(airport => airport != null)
                 .Subscribe(airport => FlyToAirport(airport!));
 
+            var canExecuteFlightActions = this.WhenAnyValue(
+                x => x.SelectedAircraft,
+                x => x.OriginAirport,
+                x => x.DestAirport,
+                (aircraft, origin, dest) => aircraft != null && origin != null && dest != null
+            ).ObserveOn(RxSchedulers.MainThreadScheduler);
+
             ViewOnMapCommand = ReactiveCommand.Create<Airport>(FlyToAirport);
+            ClearFormCommand = ReactiveCommand.Create(ClearForm);
 
             BuildFlightPathCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -150,6 +163,8 @@ namespace AeroSim2026.ViewModels
                 int cruiseAltitude = SelectedCruiseAltitude;
                 try
                 {
+                    await _flightServices.BuildCorridorGraphAsync(OriginAirport, DestAirport);
+
                     var flightPathResult = await Task.Run(() =>
                     {
                         var result = new List<RouteOption>();
@@ -182,6 +197,9 @@ namespace AeroSim2026.ViewModels
                             var routeNames = new List<string>();
                             var fpRoutesToSave = new List<FlightPlanRoute>();
 
+                            var (origX, origY) = Mapsui.Projections.SphericalMercator.FromLonLat(OriginAirport.Lonx, OriginAirport.Laty);
+                            routePoints.Add(new Coordinate(origX, origY));
+
                             foreach (var leg in proposed.Legs)
                             {
                                 var (wpX, wpY) = Mapsui.Projections.SphericalMercator.FromLonLat(leg.Waypoint.Longitude, leg.Waypoint.Latitude);
@@ -201,7 +219,8 @@ namespace AeroSim2026.ViewModels
                                     WaypointId = leg.Waypoint.WaypointId
                                 });
                             }
-
+                            var (destX, destY) = Mapsui.Projections.SphericalMercator.FromLonLat(DestAirport.Lonx, DestAirport.Laty);
+                            routePoints.Add(new Coordinate(destX, destY));
                             details.Add($"🛬 {DestAirport.Ident} (Arrival)");
 
                             string routeString = $"{OriginAirport.Ident} -> " + string.Join(" -> ", routeNames.Take(4)) + (routeNames.Count > 4 ? " ... " : " -> ") + $"{DestAirport.Ident}";
@@ -238,7 +257,7 @@ namespace AeroSim2026.ViewModels
                         _statusService.StatusMessage = "Ready";
                     }
                 }
-            });
+            }, canExecuteFlightActions);
 
             SaveFlightPlanCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -291,7 +310,7 @@ namespace AeroSim2026.ViewModels
                         _statusService.StatusMessage = "Ready";
                     }
                 }
-            });
+            }, canExecuteFlightActions);
 
             this.WhenAnyValue(x => x.SelectedRouteOption)
                 .ObserveOn(RxSchedulers.MainThreadScheduler) // <--- CRITICAL: Forces UI Thread
@@ -462,15 +481,15 @@ namespace AeroSim2026.ViewModels
 
             map.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer("AeroSim2026/1.0"));
 
-            var majorAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 2), Color.Red, 0, double.MaxValue);
-            var regionalAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 3), Color.Orange, 0, 4000);
-            var smallAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 1), Color.OrangeRed, 0, 1000);
-            var milAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 8), Color.OrangeRed, 0, 1000);
+            _majorAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 2), Color.Red, 0, double.MaxValue);
+            _regionalAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 3), Color.Orange, 0, 4000);
+            _smallAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 1), Color.OrangeRed, 0, 1000);
+            _milAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 8), Color.OrangeRed, 0, 1000);
 
-            map.Layers.Add(majorAirportsLayer);
-            map.Layers.Add(regionalAirportsLayer);
-            map.Layers.Add(smallAirportsLayer);
-            map.Layers.Add(milAirportsLayer);
+            map.Layers.Add(_majorAirportsLayer);
+            map.Layers.Add(_regionalAirportsLayer);
+            map.Layers.Add(_smallAirportsLayer);
+            map.Layers.Add(_milAirportsLayer);
 
             _routeLayer = new MemoryLayer
             {
@@ -523,6 +542,13 @@ namespace AeroSim2026.ViewModels
 
         private void UpdateFlightPath()
         {
+
+            bool hideClutter = OriginAirport != null && DestAirport != null;
+            if (_majorAirportsLayer != null) _majorAirportsLayer.Enabled = !hideClutter;
+            if (_regionalAirportsLayer != null) _regionalAirportsLayer.Enabled = !hideClutter;
+            if (_smallAirportsLayer != null) _smallAirportsLayer.Enabled = !hideClutter;
+            if (_milAirportsLayer != null) _milAirportsLayer.Enabled = !hideClutter;
+
             if (_routeLayer == null) return;
             var newFeatures = new List<GeometryFeature>();
 
@@ -618,7 +644,35 @@ namespace AeroSim2026.ViewModels
                 FlightMap.Navigator.CenterOnAndZoomTo(new MPoint(x, y), level14Resolution);
             }
         }
+        public void ClearForm()
+        {
+            // Reset inputs
+            OriginAirport = null;
+            DestAirport = null;
+            SelectedAircraft = null;
+            SearchText = string.Empty;
 
+            // Clear outputs and properties
+            RouteOptions.Clear();
+            SelectedRouteOption = null;
+            TotalDistance = 0;
+            EstimatedTime = TimeSpan.Zero;
+
+            // Wipe the map route
+            if (_routeLayer != null)
+            {
+                _routeLayer.Features = new List<GeometryFeature>();
+                _routeLayer.DataHasChanged();
+                FlightMap?.Refresh();
+            }
+
+            // Optional: Zoom the map back out to the whole US/World
+            if (FlightMap?.Navigator != null)
+            {
+                var (x, y) = Mapsui.Projections.SphericalMercator.FromLonLat(-98.5795, 39.8283); // Center of US
+                FlightMap.Navigator.CenterOnAndZoomTo(new MPoint(x, y), 4891); // Zoomed out resolution
+            }
+        }
         private static ZoomInOutWidget CreateZoomInOutWidget(Orientation orientation,
         VerticalAlignment verticalAlignment, HorizontalAlignment horizontalAlignment)
         {

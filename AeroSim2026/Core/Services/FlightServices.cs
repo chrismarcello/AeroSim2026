@@ -4,9 +4,12 @@ using System.Text;
 using AeroSim2026.EFModels;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using System.Reactive.Subjects;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using AeroSim2026.Models;
+using AeroSim2026.Core.Routing;
 
 namespace AeroSim2026.Core.Services
 {
@@ -17,19 +20,67 @@ namespace AeroSim2026.Core.Services
         private readonly IAirportServices airportServices;
         private readonly IAircraftServices aircraftServices;
         private readonly INavigationServices navigationServices;
+        private readonly RoutingGraph _routingGraph;
+        private readonly IServiceScopeFactory _scopeFactory;
+
+        
 
         private const string CruiseSpeedPropertyId = "b7257438-0d1e-11f1-8f56-00155dcf273e";
         private const string RangePropertyId = "c38c6aa7-fe53-11f0-ae5d-0a0027000002";
         private const string MinTakeoffPropertyId = "adee14ee-fe53-11f0-ae5d-0a0027000002";
         private const string MinLandingPropertyId = "adef229b-fe53-11f0-ae5d-0a0027000002";
 
-        public FlightServices(ILogger<FlightServices> logger, Aerosim2026Context context, IAirportServices airportServices, IAircraftServices aircraftServices, INavigationServices navigationServices)
+        public FlightServices(ILogger<FlightServices> logger, Aerosim2026Context context, IAirportServices airportServices, IAircraftServices aircraftServices, INavigationServices navigationServices, RoutingGraph routingGraph, IServiceScopeFactory scopeFactory)
         {
             this.logger = logger;
             this.context = context;
             this.airportServices = airportServices;
             this.aircraftServices = aircraftServices;
             this.navigationServices = navigationServices;
+            _routingGraph = routingGraph;
+            _scopeFactory = scopeFactory;
+        }
+
+       public async Task BuildCorridorGraphAsync(Airport origin, Airport destination)
+        {
+            double padding = 5.0; // Add 5 degree padding around the direct line
+            double minLat = Math.Min(origin.Laty, destination.Laty) - padding;
+            double maxLat = Math.Max(origin.Laty, destination.Laty) + padding;
+            double minLon = Math.Min(origin.Lonx, destination.Lonx) - padding;
+            double maxLon = Math.Max(origin.Lonx, destination.Lonx) + padding;
+
+            using var scope = _scopeFactory.CreateScope();
+            var bgContext = scope.ServiceProvider.GetRequiredService<Aerosim2026Context>();
+
+            var airways = await bgContext.Airways
+                .Include(a => a.FromWaypoint)
+                .Include(a => a.ToWaypoint)
+                .Where(a => a.FromLaty >= minLat && a.FromLaty <= maxLat &&
+                    a.FromLonx >= minLon && a.FromLonx <= maxLon)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var waypointIds = airways.Select(a => a.FromWaypointId)
+                .Union(airways.Select(a => a.ToWaypointId))
+                .Distinct()
+                .ToList();
+
+            var navSearches = await bgContext.NavSearches
+            .Where(n => n.WaypointId != null && waypointIds.Contains(n.WaypointId.Value))
+             .Select(n => new { n.WaypointId, n.VorId, n.NdbId })
+             .AsNoTracking()
+             .ToListAsync();
+
+            var navTypeLookup = new Dictionary<int, string>();
+            foreach (var nav in navSearches)
+            {
+                int wpId = nav.WaypointId!.Value;
+                if (nav.VorId.HasValue) navTypeLookup[wpId] = "VOR";
+                else if (nav.NdbId.HasValue) navTypeLookup[wpId] = "NDB";
+                else navTypeLookup[wpId] = "WAYPOINT";
+            }
+
+            _routingGraph.BuildGraph(airways, navTypeLookup);
         }
 
         public async Task<List<FlightPlan>> GetAllFlights()
@@ -210,9 +261,12 @@ namespace AeroSim2026.Core.Services
                 return await context.FlightPlans
                     .Include(fp => fp.FlightPlanRoutes)
                         .ThenInclude(fpr => fpr.Airway)
+                        .AsNoTracking()
                     .Include(fp => fp.FlightPlanRoutes)     // Add this line
                         .ThenInclude(fpr => fpr.Waypoint)   // Add this line
-                    .FirstOrDefaultAsync(fp => fp.FlightPlanId == flightPlanId);
+                        .AsNoTracking()
+                    .FirstOrDefaultAsync(fp => fp.FlightPlanId == flightPlanId)
+                    ;
             }
             catch (Exception ex)
             {
@@ -279,5 +333,6 @@ namespace AeroSim2026.Core.Services
 
             return generatedFlight;
         }
+        
     }
 }

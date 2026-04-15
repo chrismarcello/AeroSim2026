@@ -127,7 +127,7 @@
                             </MultiBinding>
                         </TextBlock.Text>
                     </TextBlock>
-                    <TextBlock Text="{Binding CurrentFlight.EstFlightTime, StringFormat='{}Estimated Flight Time: {0}'}" />
+                    <TextBlock Text="{Binding CurrentFlight.EstFlightTimeFormatted, StringFormat='{}Estimated Flight Time: {0}'}" />
                     <Button Grid.Column="1" 
                             Command="{Binding SaveFlightCommand}"
                             CommandParameter="{Binding CurrentFlight}">

@@ -17,14 +17,15 @@ namespace AeroSim2026.Core.Services
             var (x, y) = Mapsui.Projections.SphericalMercator.FromLonLat(lon, lat);
             var feature = new GeometryFeature(new Point(new Coordinate(x, y)));
 
+            string navClean = navType?.Trim().ToUpper() ?? "W";
+
             // Select asset based on NavType
-            string? assetUri = navType?.ToUpper() switch
+            string? assetUri = navClean switch
             {
                 "AIRPORT" => "avares://AeroSim2026/Assets/Icons/p-o-i-solid_Red.png",
-                "VOR" => "avares://AeroSim2026/Assets/svg/vor.svg",
-                "NDB" => "avares://AeroSim2026/Assets/svg/ndb.svg",
-                "WAYPOINT" => "avares://AeroSim2026/Assets/svg/waypoint.svg",
-                _ => null
+                "VOR" or "V" => "avares://AeroSim2026/Assets/svg/vor.svg",
+                "NDB" or "N" => "avares://AeroSim2026/Assets/svg/ndb.svg",
+                _ => "avares://AeroSim2026/Assets/svg/waypoint.svg" // Catch-all for W, I, R, U, or unknown codes
             };
 
             bool useFallback = true;
@@ -42,10 +43,11 @@ namespace AeroSim2026.Core.Services
                         Image = new Mapsui.Styles.Image { Source = $"base64-content://{base64Image}" },
 
                         // REDUCED: Changed 0.3 to 0.08 so the pin isn't giant
-                        SymbolScale = navType?.ToUpper() == "AIRPORT" ? 0.08 : 0.5,
+                        SymbolScale = navType?.ToUpper() == "AIRPORT" ? 0.08 : 0.15,
 
                         // Slightly adjusted the offset so the tip of the smaller pin points exactly at the coordinate
-                        Offset = navType?.ToUpper() == "AIRPORT" ? new Offset(0, -18) : new Offset(0, 0)
+                        //Offset = navType?.ToUpper() == "AIRPORT" ? new Offset(0, -18) : new Offset(0, 0)
+                        Offset = new Offset(0, 0)
                     });
                 }
             }
@@ -56,7 +58,7 @@ namespace AeroSim2026.Core.Services
                 feature.Styles.Add(new SymbolStyle
                 {
                     Fill = new Brush(Color.Cyan),
-                    SymbolScale = 0.4,
+                    SymbolScale = 0.2,
                     SymbolType = SymbolType.Ellipse,
                     Outline = new Pen(Color.Magenta, 2)
                 });

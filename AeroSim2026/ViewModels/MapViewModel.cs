@@ -43,6 +43,8 @@ namespace AeroSim2026.ViewModels
             var perfWidget = tempMap.Widgets.FirstOrDefault(w => w.GetType().Name == "PerformanceWidget");
             if (perfWidget != null) perfWidget.Enabled = false;
 
+            tempMap.BackColor = Mapsui.Styles.Color.Transparent;
+
             tempMap.Layers.Add(OpenStreetMap.CreateTileLayer());
 
             // 2. Set up the dynamic route layer with a thick magenta line

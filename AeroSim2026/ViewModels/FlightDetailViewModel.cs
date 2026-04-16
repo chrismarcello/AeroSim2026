@@ -178,6 +178,8 @@ namespace AeroSim2026.ViewModels
             var perfWidget = map.Widgets.FirstOrDefault(w => w.GetType().Name == "PerformanceWidget");
             if (perfWidget != null) perfWidget.Enabled = false;
 
+            map.BackColor = Mapsui.Styles.Color.Transparent;
+
             map.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer("AeroSim2026/1.0"));
 
             var markerFeatures = new List<GeometryFeature>();

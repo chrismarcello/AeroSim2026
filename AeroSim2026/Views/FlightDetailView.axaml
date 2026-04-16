@@ -44,7 +44,11 @@
             <StackPanel Spacing="20">
                 
 
-                <Border x:Name="MapContainer" Height="400" CornerRadius="5" ClipToBounds="True" BorderBrush="#444" BorderThickness="1" />
+                <Border x:Name="MapContainer" Height="400" CornerRadius="5" ClipToBounds="True" BorderBrush="#444" BorderThickness="1" Background="#111">
+    
+                    <mapsui:MapControl Map="{Binding FlightMap}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+                </Border>
 
                 <StackPanel Spacing="10">
                     <StackPanel.Styles>

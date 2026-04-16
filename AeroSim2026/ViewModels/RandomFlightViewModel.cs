@@ -188,13 +188,8 @@ namespace AeroSim2026.ViewModels
 
             var markerFeatures = new List<Mapsui.Nts.GeometryFeature>();
 
-            // 1. Add Origin
-            if (origin != null)
-            {
-                markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(origin.Laty, origin.Lonx, origin.Ident, "AIRPORT"));
-            }
 
-            // 2. Add Enroute
+            // Add Enroute
             if (selectedPath.GeneratedFlightPlanRoutes != null)
             {
                 foreach (var leg in selectedPath.GeneratedFlightPlanRoutes)
@@ -207,13 +202,7 @@ namespace AeroSim2026.ViewModels
                 }
             }
 
-            // 3. Add Destination
-            if (dest != null)
-            {
-                markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(dest.Laty, dest.Lonx, dest.Ident, "AIRPORT"));
-            }
-
-            // 4. SAFELY Create the Route Line (Requires at least 2 valid points!)
+            // SAFELY Create the Route Line (Requires at least 2 valid points!)
             Mapsui.Nts.GeometryFeature? routeFeature = null;
             var validWaypoints = selectedPath.Waypoints?
                 .Where(w => !double.IsNaN(w.X) && !double.IsNaN(w.Y) && !double.IsInfinity(w.X) && !double.IsInfinity(w.Y))
@@ -224,7 +213,7 @@ namespace AeroSim2026.ViewModels
                 routeFeature = _mapFeatureFactory.CreateRouteLine(validWaypoints);
             }
 
-            // 5. Pass to MapViewModel
+            // Pass to MapViewModel
             MapViewModel.UpdateRoute(routeFeature, markerFeatures);
         }});
         }
@@ -327,6 +316,9 @@ namespace AeroSim2026.ViewModels
 
                         var fpRoutesToSave = new List<FlightPlanRoute>();
 
+                        var (origX, origY) = Mapsui.Projections.SphericalMercator.FromLonLat(origin.Lonx, origin.Laty);
+                        routePoints.Add(new NetTopologySuite.Geometries.Coordinate(origX, origY));
+
                         foreach (var leg in proposed.Legs)
                         {
                             var (wpX, wpY) = Mapsui.Projections.SphericalMercator.FromLonLat(leg.Waypoint.Longitude, leg.Waypoint.Latitude);
@@ -345,6 +337,9 @@ namespace AeroSim2026.ViewModels
                                 WaypointId = leg.Waypoint.WaypointId
                             });
                         }
+
+                        var (destX, destY) = Mapsui.Projections.SphericalMercator.FromLonLat(dest.Lonx, dest.Laty);
+                        routePoints.Add(new NetTopologySuite.Geometries.Coordinate(destX, destY));
 
                         details.Add($"🛬 {dest.Ident} (Arrival)");
 

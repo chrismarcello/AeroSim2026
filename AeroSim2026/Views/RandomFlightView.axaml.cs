@@ -26,13 +26,7 @@ namespace AeroSim2026.Views
 
             // 2. Bind its "Map" property to the nested "MapViewModel.Map" property
             mapControl.Bind(MapControl.MapProperty, new Binding("MapViewModel.Map"));
-
-            // 3. Inject it into the UI Border named MapContainer
-            var container = this.FindControl<Border>("MapContainer");
-            if (container != null)
-            {
-                container.Child = mapControl;
-            }
+            
         }
     }
 }

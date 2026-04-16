@@ -42,7 +42,5 @@ public partial class FlightDetailView : ReactiveUserControl<FlightDetailViewMode
         // 2. Bind its "Map" property to the "FlightMap" property we built in the ViewModel
         mapControl.Bind(MapControl.MapProperty, new Binding("FlightMap"));
 
-        // 3. Inject it into the UI Border we named MapContainer
-        MapContainer.Child = mapControl;
     }
 }

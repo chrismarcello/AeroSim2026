@@ -186,7 +186,10 @@
         CornerRadius="4" 
         BorderThickness="1" 
         BorderBrush="Gray" 
-        ClipToBounds="True" />
+        ClipToBounds="True"
+        Background="#111"> <mapsui:MapControl Map="{Binding MapViewModel.Map}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+</Border>
 </Grid>
                 
 

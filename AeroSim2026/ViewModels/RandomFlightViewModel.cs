@@ -197,6 +197,9 @@ namespace AeroSim2026.ViewModels
                     var node = _routingGraph.GetNode(leg.WaypointId);
                     if (node != null && !double.IsNaN(node.Latitude) && !double.IsNaN(node.Longitude))
                     {
+                        if (origin != null && node.Identifier?.Trim() == origin.Ident?.Trim()) continue;
+                        if (dest != null && node.Identifier?.Trim() == dest.Ident?.Trim()) continue;
+
                         markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier, node.NavType));
                     }
                 }

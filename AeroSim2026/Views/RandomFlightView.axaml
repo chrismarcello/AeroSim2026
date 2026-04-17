@@ -187,7 +187,7 @@
         BorderThickness="1" 
         BorderBrush="Gray" 
         ClipToBounds="True"
-        Background="#111"> <mapsui:MapControl Map="{Binding MapViewModel.Map}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+        Background="#111"> <mapsui:MapControl Map="{Binding MapViewModel.Map}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" />
 
 </Border>
 </Grid>

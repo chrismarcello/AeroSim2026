@@ -1,4 +1,5 @@
 ﻿using AeroSim2026.EFModels;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using DynamicData;
 using Mapsui;
@@ -93,15 +94,13 @@ namespace AeroSim2026.ViewModels
 
         private ILayer CreateAirportMarkersLayer(Airport departure, Airport arrival, double startX, double startY, double endX, double endY)
         {
-            // Load Images safely (Using Orange for Origin, Red for Dest based on your assets folder!)
-            if (_cachedDepartIconBase64 == null) _cachedDepartIconBase64 = LoadIconBase64("avares://AeroSim2026/Assets/p-o-i-solid_Orange.png");
-            if (_cachedDestIconBase64 == null) _cachedDestIconBase64 = LoadIconBase64("avares://AeroSim2026/Assets/p-o-i-solid_Red.png");
+            // The path fix is here
+            if (_cachedDepartIconBase64 == null) _cachedDepartIconBase64 = LoadIconBase64("avares://AeroSim2026/Assets/Icons/p-o-i-solid_Orange.png");
+            if (_cachedDestIconBase64 == null) _cachedDestIconBase64 = LoadIconBase64("avares://AeroSim2026/Assets/Icons/p-o-i-solid_Red.png");
 
-            // Departure Marker
             var departMarker = new GeometryFeature(new Point(startX, startY));
             ApplyMarkerStyles(departMarker, departure.Ident, _cachedDepartIconBase64, Mapsui.Styles.Color.Orange);
 
-            // Arrival Marker
             var destMarker = new GeometryFeature(new Point(endX, endY));
             ApplyMarkerStyles(destMarker, arrival.Ident, _cachedDestIconBase64, Mapsui.Styles.Color.Red);
 
@@ -114,13 +113,12 @@ namespace AeroSim2026.ViewModels
 
         private void ApplyMarkerStyles(GeometryFeature feature, string ident, string? base64Icon, Mapsui.Styles.Color fallbackColor)
         {
-            // 1. Image or Fallback Circle
             if (!string.IsNullOrEmpty(base64Icon))
             {
                 feature.Styles.Add(new ImageStyle
                 {
                     Image = new Mapsui.Styles.Image { Source = $"base64-content://{base64Icon}" },
-                    SymbolScale = 0.05, // Adjust as needed for your icon size
+                    SymbolScale = 0.05,
                     Offset = new Offset(0, 20)
                 });
             }

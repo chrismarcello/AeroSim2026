@@ -201,6 +201,9 @@ namespace AeroSim2026.ViewModels
                 {
                     if (step.Waypoint != null)
                     {
+                        if (step.Waypoint.Ident?.Trim() == Flight.StartAirport.Ident?.Trim()) continue;
+                        if (step.Waypoint.Ident?.Trim() == Flight.EndAirport.Ident?.Trim()) continue;
+
                         markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(step.Waypoint.Laty, step.Waypoint.Lonx, step.Waypoint.Ident, step.Waypoint.WaypointType));
 
                         var (wpX, wpY) = SphericalMercator.FromLonLat(step.Waypoint.Lonx, step.Waypoint.Laty);

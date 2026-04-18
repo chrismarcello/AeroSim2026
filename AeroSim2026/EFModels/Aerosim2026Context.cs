@@ -1300,8 +1300,14 @@ public partial class Aerosim2026Context : DbContext
                 .HasForeignKey(d => d.AirportId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.PrimaryEnd).WithMany(p => p.Runways)
+            entity.HasOne(d => d.PrimaryEnd)
+                .WithMany(p => p.PrimaryRunways)
                 .HasForeignKey(d => d.PrimaryEndId)
+                .OnDelete(DeleteBehavior.ClientSetNull); // Or whatever delete behavior you prefer
+
+            entity.HasOne(d => d.SecondaryEnd)
+                .WithMany(p => p.SecondaryRunways)
+                .HasForeignKey(d => d.SecondaryEndId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 

@@ -134,7 +134,9 @@ namespace AeroSim2026.Core.Services
             try
             {
                 return await context.FlightPlans.Where(fp => fp.DateFlown != null)
-                .Include(fp => fp.StartAirport)
+                    .Include(fp => fp.FlightPlanRoutes.OrderBy(r => r.SequenceNumber))
+                        .ThenInclude(route => route.Waypoint)
+                    .Include(fp => fp.StartAirport)
                         .ThenInclude(a => a.AirportsLocation)
                             .ThenInclude(al => al.GeoCity)
                     .Include(fp => fp.StartAirport)
@@ -149,7 +151,9 @@ namespace AeroSim2026.Core.Services
                     .Include(fp => fp.StartAirport)
                         .ThenInclude(a => a.AirportsLocation)
                             .ThenInclude(al => al.GeoAdmin3)
-
+                    .Include(fp => fp.StartAirport)
+                        .ThenInclude(a => a.Runways)
+                            .ThenInclude(r => r.PrimaryEnd)
                     .Include(fp => fp.EndAirport)
                         .ThenInclude(a => a.AirportsLocation)
                             .ThenInclude(al => al.GeoCity)
@@ -165,7 +169,9 @@ namespace AeroSim2026.Core.Services
                     .Include(fp => fp.EndAirport)
                         .ThenInclude(a => a.AirportsLocation)
                             .ThenInclude(al => al.GeoAdmin3)
-
+                    .Include(fp => fp.EndAirport)
+                        .ThenInclude(a => a.Runways)
+                            .ThenInclude(r => r.PrimaryEnd)
                     .Include(fp => fp.AircraftModel)
                     .ToListAsync();
 
@@ -181,6 +187,8 @@ namespace AeroSim2026.Core.Services
             try
             {
                 return await context.FlightPlans.Where(fp => fp.DateFlown == null)
+                    .Include(fp => fp.FlightPlanRoutes.OrderBy(r => r.SequenceNumber))
+                        .ThenInclude(route => route.Waypoint)
                     .Include(fp => fp.StartAirport)
                         .ThenInclude(a => a.AirportsLocation)
                             .ThenInclude(al => al.GeoCity)
@@ -196,7 +204,12 @@ namespace AeroSim2026.Core.Services
                     .Include(fp => fp.StartAirport)
                         .ThenInclude(a => a.AirportsLocation)
                             .ThenInclude(al => al.GeoAdmin3)
-
+                    .Include(fp => fp.StartAirport)
+                        .ThenInclude(a => a.Runways)
+                            .ThenInclude(r => r.PrimaryEnd)
+                    .Include(fp => fp.StartAirport)
+                        .ThenInclude(a => a.Runways)
+                            .ThenInclude(r => r.SecondaryEnd)
                     .Include(fp => fp.EndAirport)
                         .ThenInclude(a => a.AirportsLocation)
                             .ThenInclude(al => al.GeoCity)
@@ -212,7 +225,12 @@ namespace AeroSim2026.Core.Services
                     .Include(fp => fp.EndAirport)
                         .ThenInclude(a => a.AirportsLocation)
                             .ThenInclude(al => al.GeoAdmin3)
-
+                    .Include(fp => fp.EndAirport)
+                        .ThenInclude(a => a.Runways)
+                            .ThenInclude(r => r.PrimaryEnd)
+                    .Include(fp => fp.EndAirport)
+                        .ThenInclude(a => a.Runways)
+                            .ThenInclude(r => r.SecondaryEnd)
                     .Include(fp => fp.AircraftModel)
                     .ToListAsync();
 

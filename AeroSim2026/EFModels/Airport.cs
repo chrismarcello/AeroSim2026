@@ -164,4 +164,5 @@ public partial class Airport
     public virtual ICollection<Runway> Runways { get; set; } = new List<Runway>();
 
     public virtual ICollection<RunwaysStart> RunwaysStarts { get; set; } = new List<RunwaysStart>();
+
 }

@@ -61,5 +61,5 @@ public partial class RunwaysEnd
 
     public virtual ICollection<IlsRunway> IlsRunways { get; set; } = new List<IlsRunway>();
 
-    public virtual ICollection<Runway> Runways { get; set; } = new List<Runway>();
+    //public virtual ICollection<Runway> Runways { get; set; } = new List<Runway>();
 }

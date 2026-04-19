@@ -154,7 +154,10 @@ namespace AeroSim2026.ViewModels
                 routeLayer = new MemoryLayer 
                 { 
                     Name = "Route",
-                    Style = new VectorStyle { Fill = null }
+                    Style = new VectorStyle 
+                    { 
+                        Fill = new Brush { Color = Color.Transparent, FillStyle = FillStyle.Hollow }
+                    }
                 };
                 Map.Layers.Add(routeLayer);
             }
@@ -166,7 +169,10 @@ namespace AeroSim2026.ViewModels
                 markerLayer = new MemoryLayer 
                 { 
                     Name = "Markers", 
-                    Style = null
+                    Style = new VectorStyle 
+                    { 
+                        Fill = new Brush { Color = Color.Transparent, FillStyle = FillStyle.Hollow }
+                    }
                 };
                 Map.Layers.Add(markerLayer);
             }

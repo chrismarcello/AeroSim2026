@@ -19,52 +19,30 @@ namespace AeroSim2026.Core.Services
 
             string navClean = navType?.Trim().ToUpper() ?? "W";
 
-            string? assetUri = navClean switch
+            Mapsui.Styles.Color waypointColor = navType?.ToUpper() switch
             {
-                "AIRPORT" => "avares://AeroSim2026/Assets/Icons/p-o-i-solid_Red.png",
-                "VOR" or "V" => "avares://AeroSim2026/Assets/svg/vor.svg",
-                "NDB" or "N" => "avares://AeroSim2026/Assets/svg/ndb.svg",
-                _ => "avares://AeroSim2026/Assets/svg/waypoint.svg"
+                "AIRPORT" => Mapsui.Styles.Color.Purple,
+                "VOR" => Mapsui.Styles.Color.Cyan,
+                "NDB" => Mapsui.Styles.Color.Green,
+                _ => Mapsui.Styles.Color.Gray
             };
-
-            bool useFallback = true;
-
-            if (assetUri != null)
+            feature.Styles.Add(new SymbolStyle
             {
-                string base64Image = GetOrLoadImageBase64(assetUri);
-
-                if (!string.IsNullOrEmpty(base64Image))
-                {
-                    useFallback = false;
-                    feature.Styles.Add(new ImageStyle
-                    {
-                        Image = new Mapsui.Styles.Image { Source = $"base64-content://{base64Image}" },
-                        SymbolScale = navType?.ToUpper() == "AIRPORT" ? 0.08 : 0.15,
-                        Offset = new Offset(0, 0)
-                    });
-                }
-            }
-
-            if (useFallback)
-            {
-                feature.Styles.Add(new SymbolStyle
-                {
-                    Fill = new Brush(Color.Cyan),
-                    SymbolScale = 0.2,
-                    SymbolType = SymbolType.Ellipse,
-                    Outline = new Pen(Color.Magenta, 2)
-                });
-            }
-
+                SymbolType = navClean == "AIRPORT" ? SymbolType.Ellipse : SymbolType.Triangle,
+                SymbolScale = navClean == "AIRPORT" ? 0.35 : 0.25,
+                Fill = new Brush(waypointColor),
+                //Outline = new Pen(Mapsui.Styles.Color.White, 2)
+            });
             if (!string.IsNullOrEmpty(identifier))
             {
                 feature.Styles.Add(new LabelStyle
                 {
                     Text = identifier,
-                    Font = new Font { Size = 12, Bold = true, FontFamily = "Arial" },
-                    ForeColor = Color.White,
-                    Halo = new Pen(Color.Black, 2),
-                    Offset = new Offset(0, -12)
+                Font = new Font { FontFamily = "Arial", Size = 10, Bold = true },
+                ForeColor = Mapsui.Styles.Color.White,
+                Halo = new Pen(Mapsui.Styles.Color.Black, 2),
+                VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Top,
+                Offset = new Offset(0, 8)
                 });
             }
 
@@ -78,24 +56,5 @@ namespace AeroSim2026.Core.Services
             return feature;
         }
 
-        private string GetOrLoadImageBase64(string uri)
-        {
-            if (_iconCache.TryGetValue(uri, out var cachedBase64)) return cachedBase64;
-
-            try
-            {
-                using var stream = AssetLoader.Open(new Uri(uri));
-                using var memoryStream = new MemoryStream();
-                stream.CopyTo(memoryStream);
-                var base64 = Convert.ToBase64String(memoryStream.ToArray());
-                _iconCache[uri] = base64;
-                return base64;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Failed to load map icon: {uri} - {ex.Message}");
-                return null!;
-            }
-        }
     }
 }

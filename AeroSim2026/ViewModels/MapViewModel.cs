@@ -27,8 +27,8 @@ namespace AeroSim2026.ViewModels
         private MemoryLayer _routeLayer;
 
         // Cache the images so we only load them once per app session
-        private static string? _cachedDepartIconBase64;
-        private static string? _cachedDestIconBase64;
+        private static string? _cachedDepartIconSource;
+        private static string? _cachedDestIconSource;
 
         public Map Map
         {
@@ -94,71 +94,41 @@ namespace AeroSim2026.ViewModels
 
         private ILayer CreateAirportMarkersLayer(Airport departure, Airport arrival, double startX, double startY, double endX, double endY)
         {
-            // The path fix is here
-            if (_cachedDepartIconBase64 == null) _cachedDepartIconBase64 = LoadIconBase64("avares://AeroSim2026/Assets/Icons/p-o-i-solid_Orange.png");
-            if (_cachedDestIconBase64 == null) _cachedDestIconBase64 = LoadIconBase64("avares://AeroSim2026/Assets/Icons/p-o-i-solid_Red.png");
-
             var departMarker = new GeometryFeature(new Point(startX, startY));
-            ApplyMarkerStyles(departMarker, departure.Ident, _cachedDepartIconBase64, Mapsui.Styles.Color.Orange);
+            ApplyMarkerStyles(departMarker, departure.Ident, Mapsui.Styles.Color.Orange);
 
             var destMarker = new GeometryFeature(new Point(endX, endY));
-            ApplyMarkerStyles(destMarker, arrival.Ident, _cachedDestIconBase64, Mapsui.Styles.Color.Red);
+            ApplyMarkerStyles(destMarker, arrival.Ident, Mapsui.Styles.Color.Red);
 
-            return new MemoryLayer
-            {
-                Name = "Airports",
-                Features = new[] { departMarker, destMarker }
+            return new MemoryLayer 
+            { 
+                Name = "Airports", 
+                Features = new[] { departMarker, destMarker },
+                Style = null // Styles are applied directly to features, so we set layer style to null
             };
         }
 
-        private void ApplyMarkerStyles(GeometryFeature feature, string ident, string? base64Icon, Mapsui.Styles.Color fallbackColor)
+        private void ApplyMarkerStyles(GeometryFeature feature, string ident, Mapsui.Styles.Color markerColor)
         {
-            if (!string.IsNullOrEmpty(base64Icon))
+            // 1. Sleek Native Vector Dot
+            feature.Styles.Add(new SymbolStyle
             {
-                feature.Styles.Add(new ImageStyle
-                {
-                    Image = new Mapsui.Styles.Image { Source = $"base64-content://{base64Icon}" },
-                    SymbolScale = 0.05,
-                    Offset = new Offset(0, 20)
-                });
-            }
-            else
-            {
-                feature.Styles.Add(new SymbolStyle
-                {
-                    Fill = new Brush(fallbackColor),
-                    SymbolScale = 0.8,
-                    Outline = new Pen(Mapsui.Styles.Color.Black, 2),
-                    SymbolType = SymbolType.Ellipse
-                });
-            }
+                SymbolType = SymbolType.Ellipse,
+                SymbolScale = 0.5,
+                Fill = new Brush(markerColor),
+                //Outline = new Pen(Mapsui.Styles.Color.White, 3) // Thick white ring creates a beautiful cutout effect!
+            });
 
-            // 2. Text Label (The Airport Ident) stacked on top
+            // 2. Text Label
             feature.Styles.Add(new LabelStyle
             {
                 Text = ident,
                 Font = new Font { FontFamily = "Arial", Size = 14, Bold = true },
                 ForeColor = Mapsui.Styles.Color.White,
-                Halo = new Pen(Mapsui.Styles.Color.Black, 2), // Keeps it readable over roads/rivers
+                Halo = new Pen(Mapsui.Styles.Color.Black, 2),
                 VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Bottom,
-                Offset = new Offset(0, -15) // Pushes the text slightly above the icon
+                Offset = new Offset(0, -12)
             });
-        }
-
-        private string? LoadIconBase64(string uri)
-        {
-            try
-            {
-                using var stream = AssetLoader.Open(new Uri(uri));
-                using var memoryStream = new System.IO.MemoryStream();
-                stream.CopyTo(memoryStream);
-                return Convert.ToBase64String(memoryStream.ToArray());
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error loading marker icon {uri}: {ex.Message}");
-                return null;
-            }
         }
 
         private static ZoomInOutWidget CreateZoomInOutWidget(Orientation orientation, VerticalAlignment verticalAlignment, HorizontalAlignment horizontalAlignment)
@@ -181,7 +151,11 @@ namespace AeroSim2026.ViewModels
             var routeLayer = Map.Layers.FirstOrDefault(l => l.Name == "Route") as MemoryLayer;
             if (routeLayer == null)
             {
-                routeLayer = new MemoryLayer { Name = "Route" };
+                routeLayer = new MemoryLayer 
+                { 
+                    Name = "Route",
+                    Style = new VectorStyle { Fill = null }
+                };
                 Map.Layers.Add(routeLayer);
             }
 
@@ -189,7 +163,11 @@ namespace AeroSim2026.ViewModels
             var markerLayer = Map.Layers.FirstOrDefault(l => l.Name == "Markers") as MemoryLayer;
             if (markerLayer == null)
             {
-                markerLayer = new MemoryLayer { Name = "Markers" };
+                markerLayer = new MemoryLayer 
+                { 
+                    Name = "Markers", 
+                    Style = null
+                };
                 Map.Layers.Add(markerLayer);
             }
 

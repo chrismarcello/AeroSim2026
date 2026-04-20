@@ -188,7 +188,7 @@ namespace AeroSim2026.ViewModels
             var detailedFlight = await _flightServices.GetFlightPlanWithRoutesAsync(Flight.FlightPlanId);
 
             // 1. Origin Airport
-            markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(Flight.StartAirport.Laty, Flight.StartAirport.Lonx, Flight.StartAirport.Ident, "AIRPORT"));
+            markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(Flight.StartAirport.Laty, Flight.StartAirport.Lonx, Flight.StartAirport.Ident, "ORIGIN"));
 
             var (oX, oY) = SphericalMercator.FromLonLat(Flight.StartAirport.Lonx, Flight.StartAirport.Laty);
             routePoints.Add(new Coordinate(oX, oY));
@@ -204,7 +204,7 @@ namespace AeroSim2026.ViewModels
                         if (step.Waypoint.Ident?.Trim() == Flight.StartAirport.Ident?.Trim()) continue;
                         if (step.Waypoint.Ident?.Trim() == Flight.EndAirport.Ident?.Trim()) continue;
 
-                        markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(step.Waypoint.Laty, step.Waypoint.Lonx, step.Waypoint.Ident, step.Waypoint.WaypointType));
+                        markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(step.Waypoint.Laty, step.Waypoint.Lonx, step.Waypoint.Ident!, step.Waypoint.WaypointType));
 
                         var (wpX, wpY) = SphericalMercator.FromLonLat(step.Waypoint.Lonx, step.Waypoint.Laty);
                         routePoints.Add(new Coordinate(wpX, wpY));
@@ -213,7 +213,7 @@ namespace AeroSim2026.ViewModels
             }
 
             // 3. Destination Airport
-            markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(Flight.EndAirport.Laty, Flight.EndAirport.Lonx, Flight.EndAirport.Ident, "AIRPORT"));
+            markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(Flight.EndAirport.Laty, Flight.EndAirport.Lonx, Flight.EndAirport.Ident!, "DESTINATION"));
 
             var (dX, dY) = SphericalMercator.FromLonLat(Flight.EndAirport.Lonx, Flight.EndAirport.Laty);
             routePoints.Add(new Coordinate(dX, dY));
@@ -225,8 +225,24 @@ namespace AeroSim2026.ViewModels
             }
 
             // 4. Assemble Layers
-            map.Layers.Add(new MemoryLayer { Name = "Route", Features = new List<GeometryFeature> { _mapFeatureFactory.CreateRouteLine(routePoints) } });
-            map.Layers.Add(new MemoryLayer { Name = "Markers", Features = markerFeatures });
+            map.Layers.Add(new MemoryLayer
+            {
+                Name = "Route",
+                Features = new List<GeometryFeature> { _mapFeatureFactory.CreateRouteLine(routePoints) },
+                // Removes the background fill from the route line
+                Style = new VectorStyle
+                {
+                    Fill = new Brush { Color = Color.Transparent, FillStyle = FillStyle.Hollow }
+                }
+            });
+
+            map.Layers.Add(new MemoryLayer
+            {
+                Name = "Markers",
+                Features = markerFeatures,
+                // Setting this to null tells Mapsui to ignore layer styles and ONLY use the feature styles (your triangles/ellipses)
+                Style = null
+            });
 
             // 5. Zoom & Pan
             if (routePoints.Any())

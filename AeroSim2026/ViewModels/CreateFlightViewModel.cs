@@ -165,7 +165,7 @@ namespace AeroSim2026.ViewModels
                 {
                     await _flightServices.BuildCorridorGraphAsync(OriginAirport, DestAirport);
 
-                    var flightPathResult = await Task.Run(() =>
+                    var flightPathResult = await Task.Run( async() =>
                     {
                         var result = new List<RouteOption>();
 
@@ -188,7 +188,7 @@ namespace AeroSim2026.ViewModels
                         });
 
                         // 2. FETCH SMART ROUTES FROM THE NEW BUILDER
-                        var proposedRoutes = _flightRouteBuilder.GenerateAlternativeRoutes(OriginAirport, DestAirport, cruiseAltitude);
+                        var proposedRoutes = await _flightRouteBuilder.GenerateAlternativeRoutesAsync(OriginAirport, DestAirport, cruiseAltitude);
 
                         foreach (var proposed in proposedRoutes)
                         {
@@ -481,16 +481,6 @@ namespace AeroSim2026.ViewModels
 
             map.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer("AeroSim2026/1.0"));
 
-            _majorAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 2), Color.Red, 0, double.MaxValue);
-            _regionalAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 3), Color.Orange, 0, 4000);
-            _smallAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 1), Color.OrangeRed, 0, 1000);
-            _milAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 8), Color.OrangeRed, 0, 1000);
-
-            map.Layers.Add(_majorAirportsLayer);
-            map.Layers.Add(_regionalAirportsLayer);
-            map.Layers.Add(_smallAirportsLayer);
-            map.Layers.Add(_milAirportsLayer);
-
             _routeLayer = new MemoryLayer
             {
                 Name = "Route",
@@ -501,6 +491,18 @@ namespace AeroSim2026.ViewModels
                 }
             };
             map.Layers.Add(_routeLayer);
+
+            _majorAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 2), Color.Red, 0, double.MaxValue);
+            _regionalAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 3), Color.Orange, 0, 4000);
+            _smallAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 1), Color.Yellow, 0, 1000);
+            _milAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 8), Color.DarkOliveGreen, 0, 2000);
+
+            map.Layers.Add(_majorAirportsLayer);
+            map.Layers.Add(_regionalAirportsLayer);
+            map.Layers.Add(_smallAirportsLayer);
+            map.Layers.Add(_milAirportsLayer);
+
+            
             map.Widgets.Add(CreateZoomInOutWidget(Orientation.Horizontal, VerticalAlignment.Top, HorizontalAlignment.Right));
 
             FlightMap = map;
@@ -568,7 +570,7 @@ namespace AeroSim2026.ViewModels
                     // ALWAYS add Origin marker
                     if (OriginAirport != null)
                     {
-                        newFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(OriginAirport.Laty, OriginAirport.Lonx, OriginAirport.Ident, "AIRPORT"));
+                        newFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(OriginAirport.Laty, OriginAirport.Lonx, OriginAirport.Ident, "ORIGIN"));
                     }
 
                     // Add intermediate Enroute markers
@@ -591,7 +593,7 @@ namespace AeroSim2026.ViewModels
                     // ALWAYS add Destination marker
                     if (DestAirport != null)
                     {
-                        newFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(DestAirport.Laty, DestAirport.Lonx, DestAirport.Ident, "AIRPORT"));
+                        newFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(DestAirport.Laty, DestAirport.Lonx, DestAirport.Ident, "DESTINATION"));
                     }
 
                     // Auto-Center logic

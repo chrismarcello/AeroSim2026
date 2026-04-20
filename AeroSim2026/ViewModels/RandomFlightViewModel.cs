@@ -200,7 +200,7 @@ namespace AeroSim2026.ViewModels
                         if (origin != null && node.Identifier?.Trim() == origin.Ident?.Trim()) continue;
                         if (dest != null && node.Identifier?.Trim() == dest.Ident?.Trim()) continue;
 
-                        markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier, node.NavType));
+                        markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier!, node.NavType));
                     }
                 }
             }
@@ -264,7 +264,7 @@ namespace AeroSim2026.ViewModels
 
                 if (generatedFlight.OriginAirport != null && generatedFlight.ArrivalAirport != null)
                 {
-                    MapViewModel = new MapViewModel(generatedFlight.OriginAirport, generatedFlight.ArrivalAirport);
+                    MapViewModel = new MapViewModel(generatedFlight.OriginAirport, generatedFlight.ArrivalAirport, _mapFeatureFactory);
                 }
             }
         }
@@ -285,7 +285,7 @@ namespace AeroSim2026.ViewModels
 
                 await _flightServices.BuildCorridorGraphAsync(origin, dest);
 
-                var flightPathResult = await Task.Run(() =>
+                var flightPathResult = await Task.Run(async () =>
                 {
                     var result = new List<RouteOption>();
 
@@ -308,7 +308,7 @@ namespace AeroSim2026.ViewModels
 
                     // 2. FETCH SMART ROUTES FROM THE NEW BUILDER
                     // This single call now handles A* penalties, airway vs standard preference, etc!
-                    var proposedRoutes = _flightRouteBuilder.GenerateAlternativeRoutes(origin, dest, altitude);
+                    var proposedRoutes = await _flightRouteBuilder.GenerateAlternativeRoutesAsync(origin, dest, altitude);
 
                     // 3. MAP THE PROPOSED ROUTES TO UI ROUTE OPTIONS
                     foreach (var proposed in proposedRoutes)

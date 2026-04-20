@@ -40,8 +40,25 @@ namespace AeroSim2026.Core.Services
                     .Include(a => a.ToWaypoint)
                     .ToListAsync();
 
+                var navSearches = await _context.NavSearches
+                    .AsNoTracking()
+                    //.Where(ns => ns.WaypointId != null)
+                    .Select(ns => new
+                    {
+                        WaypointId = ns.WaypointId!.Value,
+                        // This is the exact null-checking logic you remembered!
+                        NavType = ns.VorId != null ? "VOR" :
+                                  ns.NdbId != null ? "NDB" :
+                                  "WAYPOINT"
+                    })
+                    .ToListAsync();
+
+                var navTypeLookup = navSearches
+                    .GroupBy(ns => ns.WaypointId)
+                    .ToDictionary(g => g.Key, g => g.First().NavType);
+                //Console.WriteLine("Just testing");
                 // Build graph using ONLY the airways list!
-                routingGraph.BuildGraph(airways);
+                routingGraph.BuildGraph(airways, navTypeLookup);
 
                 _logger.LogInformation($"Routing graph initialized with {routingGraph.GetAllNodes().Count()} nodes and {airways.Count} airways.");
             }

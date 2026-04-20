@@ -86,8 +86,11 @@ namespace AeroSim2026.Core.Services
         {
             try
             {
+                string searchIdent = airportIdent.Trim().ToLower();
+
 #pragma warning disable CS8603 // Possible null reference return.
                 return await _context.Airports
+                    .AsSplitQuery()
                     .Include(a => a.AirportsLocation)
                         .ThenInclude(al => al.GeoCity)
 
@@ -105,7 +108,7 @@ namespace AeroSim2026.Core.Services
                     .Include(a => a.AirportsComs)
                     .Include(a => a.Runways)
 
-                    .FirstOrDefaultAsync(a => a.Ident.Equals(airportIdent, StringComparison.OrdinalIgnoreCase)) ?? null;
+                    .FirstOrDefaultAsync(a => a.Ident != null && a.Ident.ToLower() == searchIdent);
 #pragma warning restore CS8603 // Possible null reference return.
             }
             catch (Exception ex)
@@ -235,6 +238,7 @@ namespace AeroSim2026.Core.Services
                 }
                 else
                 {
+                   
                     ap = await GetAirportByIdentAsync(randomParams.DepartureAirportIdent!);
                 }
             }

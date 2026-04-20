@@ -120,13 +120,14 @@
                     <StackPanel Grid.Column="0" Margin="15" Spacing="10">
 						<TextBlock FontSize="18" FontWeight="Bold">
                         <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0} to {1}: {2} NMI">
+                            <MultiBinding StringFormat="{}{0} to {1}:">
                                 <Binding Path="CurrentFlight.DepartIdent" />
                                 <Binding Path="CurrentFlight.DestIdent" />
-                                <Binding Path="CurrentFlight.DistanceNm" />
+                                
                             </MultiBinding>
                         </TextBlock.Text>
                     </TextBlock>
+                        <TextBlock Text="{Binding CurrentFlight.DistanceNm, StringFormat='{}{0:F0} NM'}" />
                     <TextBlock Text="{Binding CurrentFlight.EstFlightTimeFormatted, StringFormat='{}Estimated Flight Time: {0}'}" />
                     <Button Grid.Column="1" 
                             Command="{Binding SaveFlightCommand}"

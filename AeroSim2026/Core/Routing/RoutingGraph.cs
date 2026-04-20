@@ -17,7 +17,7 @@ namespace AeroSim2026.Core.Routing
         /// </summary>
         /// 
         // In RoutingGraph.cs
-        public void BuildGraph(List<Airway> allAirways, Dictionary<int, string> navTypeLookup = null)
+        public void BuildGraph(List<Airway> allAirways, Dictionary<int, string> navTypeLookup = null!)
         {
             _nodes.Clear();
 

@@ -168,7 +168,7 @@
                 <Border Grid.Row="0" Padding="4" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                          <TextBlock Text="Flight Details" VerticalAlignment="Center" FontWeight="SemiBold"/>                         
-                         <TextBlock Text="{Binding TotalDistance, StringFormat='{}{0:N0} nm'}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="15,0,0,0"/>
+                         <TextBlock Text="{Binding TotalDistance, StringFormat='{}{0.00:N0} nm'}" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="15,0,0,0"/>
                          <TextBlock Text="{Binding EstimatedTime, StringFormat='{}{0:hh}h {0:mm}m'}" FontSize="12" Foreground="Gray" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>

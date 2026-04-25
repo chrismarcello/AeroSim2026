@@ -179,7 +179,7 @@ namespace AeroSim2026.ViewModels
 
                         result.Add(new RouteOption
                         {
-                            Title = "Direct (Great Circle)",
+                            Title = "Direct",
                             RouteString = $"{OriginAirport.Ident} DCT {DestAirport.Ident}",
                             Distance = _navigationServices.CalculateDistance(OriginAirport.Laty, OriginAirport.Lonx, DestAirport.Laty, DestAirport.Lonx),
                             Waypoints = projectedWaypoints,

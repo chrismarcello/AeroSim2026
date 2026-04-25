@@ -224,7 +224,6 @@ namespace AeroSim2026.ViewModels
         private async void LoadDropdownDataAsync()
         {
             // Populate these using your injected services
-            // Example mapping assuming your service signatures:
 
             var aircrafts = await _aircraftServices.GetSimAircraftsList();
             foreach (var a in aircrafts) AircraftList.Add(a);
@@ -283,13 +282,14 @@ namespace AeroSim2026.ViewModels
                 var dest = CurrentFlight.OriginalFlight.ArrivalAirport;
                 var altitude = CruiseAltitude > 0 ? CruiseAltitude : 5000;
 
-                await _flightServices.BuildCorridorGraphAsync(origin, dest);
-
                 var flightPathResult = await Task.Run(async () =>
                 {
+                    // 1. BUILD GRAPH ON THE BACKGROUND THREAD
+                    await _flightServices.BuildCorridorGraphAsync(origin, dest);
+
                     var result = new List<RouteOption>();
 
-                    // 1. DIRECT ROUTE (Great Circle)
+                    // 2. DIRECT ROUTE (Great Circle)
                     var rawGreatCirclePoints = GeoMath.GenerateGreatCirclePoints(origin.Laty, origin.Lonx, dest.Laty, dest.Lonx, 100);
                     var projectedWaypoints = rawGreatCirclePoints.Select(p =>
                     {
@@ -306,11 +306,10 @@ namespace AeroSim2026.ViewModels
                         WaypointDetails = new ObservableCollection<string> { $"🛫 {origin.Ident}", "  DCT (Direct)", $"🛬 {dest.Ident}" }
                     });
 
-                    // 2. FETCH SMART ROUTES FROM THE NEW BUILDER
-                    // This single call now handles A* penalties, airway vs standard preference, etc!
+                    // 3. FETCH SMART ROUTES FROM THE NEW BUILDER
                     var proposedRoutes = await _flightRouteBuilder.GenerateAlternativeRoutesAsync(origin, dest, altitude);
 
-                    // 3. MAP THE PROPOSED ROUTES TO UI ROUTE OPTIONS
+                    // 4. MAP THE PROPOSED ROUTES TO UI ROUTE OPTIONS
                     foreach (var proposed in proposedRoutes)
                     {
                         var details = new ObservableCollection<string> { $"🛫 {origin.Ident} (Departure)" };

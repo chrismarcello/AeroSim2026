@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:AeroSim2026.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="AeroSim2026.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+    <Design.DataContext>
+        <vm:SettingsViewModel/>		        
+    </Design.DataContext>
+  <DockPanel>
+	  <TextBlock VerticalAlignment="Center" Margin="15,10,0,5" Text="Theme:" FontWeight="SemiBold" Opacity="0.7"/>
+                <ComboBox x:Name="ThemeComboBox"
+                          SelectedIndex="0"
+                          SelectionChanged="ThemeComboBox_SelectionChanged"
+                          HorizontalAlignment="Stretch"
+                          Margin="10,0,10,10">
+                    <ComboBoxItem Content="System"/>
+                    <ComboBoxItem Content="Light"/>
+                    <ComboBoxItem Content="Dark"/>
+                </ComboBox>
+  </DockPanel>
+  
+</UserControl>

@@ -16,7 +16,7 @@ namespace AeroSim2026.Views
         public MainWindow()
         {
             InitializeComponent();
-            this.Title = "AeroSim 2026 Flight Sim Tracker v0.0.25";
+            this.Title = "AeroSim 2026 Flight Sim Tracker v0.0.26";
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.WindowState = WindowState.Maximized;
 
@@ -79,41 +79,15 @@ namespace AeroSim2026.Views
         // 4. MENU TOGGLE (Replaces ToggleButton_Click)
         private void ToggleButton_Click(object sender, RoutedEventArgs e)
         {
-            // SAFEST FIX: Manually look up the control by its XAML name
-            var menuPanel = this.FindControl<StackPanel>("MenuPanel");
+            // Find the SplitView we just added
+            var splitView = this.FindControl<SplitView>("MainSplitView");
 
-            if (menuPanel != null)
+            if (splitView != null)
             {
-                menuPanel.IsVisible = !menuPanel.IsVisible;
+                // Toggle the pane open and closed
+                splitView.IsPaneOpen = !splitView.IsPaneOpen;
             }
         }
 
-        // 5. THEME SWITCHING (Replaces ThemeComboBox_SelectionChanged)
-        private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                // Get the string content (Light, Dark, System)
-                string? themeName = selectedItem.Content?.ToString();
-
-                var app = Application.Current;
-                if (app != null)
-                {
-                    switch (themeName)
-                    {
-                        case "Light":
-                            app.RequestedThemeVariant = ThemeVariant.Light;
-                            break;
-                        case "Dark":
-                            app.RequestedThemeVariant = ThemeVariant.Dark;
-                            break;
-                        default:
-                            // 'Default' generally maps to the System preference
-                            app.RequestedThemeVariant = ThemeVariant.Default;
-                            break;
-                    }
-                }
-            }
-        }
     }
 }

@@ -183,11 +183,11 @@
            Margin="0,0,0,15" 
            Foreground="#3498db" FontSize="14"/>
 
-<ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollBarVisibility="Auto" AllowAutoHide="False" MinHeight="240">
+<ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollBarVisibility="Auto" AllowAutoHide="False" MinHeight="240" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
     <ItemsControl ItemsSource="{Binding FullSelectedAircraft.Properties}">
         <ItemsControl.ItemTemplate>
             <DataTemplate>
-                <Grid ColumnDefinitions="125, 60, *" Margin="0,5,10,5">
+                <Grid ColumnDefinitions="150, 80, *" Margin="0,5,10,5">
                     <TextBlock Grid.Column="0" Text="{Binding PropertyName}" Foreground="Gray" FontSize="11" TextWrapping="NoWrap">
                         <ToolTip.Tip>
                             <StackPanel>
@@ -205,7 +205,7 @@
 
                         <TextBlock Grid.Column="1" Grid.Row="0" Text="Airport Details" FontWeight="SemiBold" Margin="10,0,0,5" Foreground="White"/>
                         
-                        <Grid Grid.Column="1" Grid.Row="1" ColumnDefinitions="*, *" Margin="10,0,0,0">
+                        <Grid Grid.Column="1" Grid.Row="1" ColumnDefinitions="*, *" Margin="10,0,0,0" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
                             <Border Grid.Column="0" BorderBrush="#333" BorderThickness="0,0,1,0" Padding="0,0,10,0">
                                 <StackPanel Spacing="5">
                                     <TextBlock Text="ORIGIN" FontSize="10" Foreground="Gray" FontWeight="Bold"/>

@@ -35,13 +35,13 @@ namespace AeroSim2026.Core.Services
                 "AIRPORT" or "A" => "userpoint_Airport.svg",
                 "VORDME" or "VD" => "userpoint_VORDME.svg",
                 "VORTAC" or "VT" => "userpoint_VORTAC.svg",
-                "VOR" or "V" => "userpoint_VOR.svg",
-                "NDB" or "N" => "userpoint_NDB.svg",
+                "VOR" or "V" => "vor.svg",
+                "NDB" or "N" => "ndb.svg",
                 "TACAN" or "T" => "userpoint_TACAN.svg",
                 "DME" or "D" => "userpoint_DME.svg",
                 "HELIPAD" or "H" => "userpoint_Helipad.svg",
                 "MARKER" or "M" => "userpoint_Marker.svg",
-                _ => "userpoint_Waypoint.svg" // Fallback to generic waypoint
+                _ => "waypoint.svg" // Fallback to generic waypoint
             };
 
             string? imageSource = GetOrLoadSvgSource($"avares://AeroSim2026/Assets/svg/{svgFileName}");

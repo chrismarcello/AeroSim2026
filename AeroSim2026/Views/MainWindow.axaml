@@ -28,21 +28,23 @@
     <DockPanel>
 		<Border DockPanel.Dock="Bottom" 
                 Background="#007ACC" 
-                Height="30" 
+                Height="28" 
                 Padding="15,0,15,3">
-            <Grid ColumnDefinitions="*, Auto, 150">
+            <Grid ColumnDefinitions="*, Auto, 350">
                 <TextBlock Grid.Column="0"
                            Text="{Binding StatusService.StatusMessage}" 
                            VerticalAlignment="Center" 
                            Foreground="White"
-                           FontSize="12"
-                           Margin="5,0,0,0"/>
+                           FontSize="11"
+                           Margin="5,5,5,5"/>
 
                 <ProgressBar Grid.Column="2" 
                              IsIndeterminate="True" 
                              IsVisible="{Binding StatusService.IsBusy}"
-                             Height="10"
-                             VerticalAlignment="Center"/>
+                             Margin="5, 5, 5, 5"
+                             Foreground="DarkGreen"
+                             Height="22"
+                             VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
             </Grid>
         </Border>
         <Grid DockPanel.Dock="Top" 
@@ -88,86 +90,93 @@
             </StackPanel>
         </Grid>
 
-        <Grid>
-			 <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" MinWidth="50" MaxWidth="200"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <!-- Sidebar -->
-            <StackPanel Grid.Column="0" 
-                        x:Name="MenuPanel" 
-                        IsVisible="False" 
-                        Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                        Width="200">
+        <SplitView x:Name="MainSplitView" 
+                   DisplayMode="CompactInline" 
+                   IsPaneOpen="False" 
+                   CompactPaneLength="50" 
+                   OpenPaneLength="200"
+                   PaneBackground="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+            
+            <SplitView.Pane>
+                <Border BorderThickness="0,0,1,0" 
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                    
+                    <StackPanel x:Name="MenuPanel">
 
-                 <Button Command="{Binding NavigateCommand}" 
-                        CommandParameter="{Binding Pages[0]}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Background="Transparent"
-                        Margin="5,2"
-                        Padding="10">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <ic:SymbolIcon Symbol="Home" FontSize="20"/>
-                        <TextBlock Text="Home" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-                <Button Command="{Binding NavigateCommand}" 
-                        CommandParameter="{Binding Pages[1]}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Background="Transparent"
-                        Margin="5,2"
-                        Padding="10">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <ic:SymbolIcon Symbol="Save" FontSize="20"/>
-                        <TextBlock Text="Saved Flights" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-                <Button Command="{Binding NavigateCommand}" 
-                        CommandParameter="{Binding Pages[2]}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Background="Transparent"
-                        Margin="5,2"
-                        Padding="10">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <ic:SymbolIcon Symbol="Map" FontSize="20"/>
-                        <TextBlock Text="Flight Planner" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-                <Button Command="{Binding NavigateCommand}" 
-                        CommandParameter="{Binding Pages[3]}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Left"
-                        Background="Transparent"
-                        Margin="5,2"
-                        Padding="10">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <ic:SymbolIcon Symbol="AirplaneTakeOff" FontSize="20"/>
-                        <TextBlock Text="Random Flight" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-                <Separator Margin="10,5" Background="{DynamicResource SystemControlForegroundBaseLowBrush}"/>                
+                        <Button Command="{Binding NavigateCommand}" 
+                                CommandParameter="{Binding Pages[0]}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Background="Transparent"
+                                Margin="0,2"
+                                Padding="15,10">
+                            <StackPanel Orientation="Horizontal" Spacing="15">
+                                <ic:SymbolIcon Symbol="Home" FontSize="20"/>
+                                <TextBlock Text="Home" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
 
-                <TextBlock VerticalAlignment="Center" Margin="15,10,0,5" Text="Theme:" FontWeight="SemiBold" Opacity="0.7"/>
-                <ComboBox x:Name="ThemeComboBox"
-                          SelectedIndex="0"
-                          SelectionChanged="ThemeComboBox_SelectionChanged"
-                          HorizontalAlignment="Stretch"
-                          Margin="10,0,10,10">
-                    <ComboBoxItem Content="System"/>
-                    <ComboBoxItem Content="Light"/>
-                    <ComboBoxItem Content="Dark"/>
-                </ComboBox>
-                
-            </StackPanel>
-            <!-- Main Content Area -->
-            <Grid Grid.Column="1">
-                <TransitioningContentControl Content="{Binding CurrentPage}"  />
-                <!-- Add main content here -->
-            </Grid>
-        </Grid>
+                        <Button Command="{Binding NavigateCommand}" 
+                                CommandParameter="{Binding Pages[1]}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Background="Transparent"
+                                Margin="0,2"
+                                Padding="15,10">
+                            <StackPanel Orientation="Horizontal" Spacing="15">
+                                <ic:SymbolIcon Symbol="Save" FontSize="20"/>
+                                <TextBlock Text="Saved Flights" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding NavigateCommand}" 
+                                CommandParameter="{Binding Pages[2]}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Background="Transparent"
+                                Margin="0,2"
+                                Padding="15,10">
+                            <StackPanel Orientation="Horizontal" Spacing="15">
+                                <ic:SymbolIcon Symbol="Map" FontSize="20"/>
+                                <TextBlock Text="Flight Planner" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Command="{Binding NavigateCommand}" 
+                                CommandParameter="{Binding Pages[3]}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Background="Transparent"
+                                Margin="0,2"
+                                Padding="15,10">
+                            <StackPanel Orientation="Horizontal" Spacing="15">
+                                <ic:SymbolIcon Symbol="AirplaneTakeOff" FontSize="20"/>
+                                <TextBlock Text="Random Flight" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                         <Button Command="{Binding NavigateCommand}" 
+                                CommandParameter="{Binding Pages[4]}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Background="Transparent"
+                                Margin="0,2"
+                                Padding="15,10">
+                            <StackPanel Orientation="Horizontal" Spacing="15">
+                                <ic:SymbolIcon Symbol="Settings" FontSize="20"/>
+                                <TextBlock Text="Settings" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                                                
+                    </StackPanel>
+                </Border>
+            </SplitView.Pane>
+            <SplitView.Content>
+                <Grid>
+                    <TransitioningContentControl Content="{Binding CurrentPage}"  />
+                </Grid>
+            </SplitView.Content>
+
+        </SplitView>
     </DockPanel>
     </Window>
 

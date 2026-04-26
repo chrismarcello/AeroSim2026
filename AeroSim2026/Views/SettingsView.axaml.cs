@@ -1,7 +1,14 @@
+using AeroSim2026.Models;
+using AeroSim2026.ViewModels;
+using AeroSim2026.Core.Services;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using System.Linq;
 
 namespace AeroSim2026.Views;
 
@@ -11,30 +18,38 @@ public partial class SettingsView : UserControl
     {
         InitializeComponent();
     }
-    private void ThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+ 
+    private async void BrowseFmsFolder_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is ComboBox comboBox && comboBox.SelectedItem is ComboBoxItem selectedItem)
-        {
-            // Get the string content (Light, Dark, System)
-            string? themeName = selectedItem.Content?.ToString();
+        var desktop = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+        if (desktop?.MainWindow == null) return;
 
-            var app = Application.Current;
-            if (app != null)
-            {
-                switch (themeName)
-                {
-                    case "Light":
-                        app.RequestedThemeVariant = ThemeVariant.Light;
-                        break;
-                    case "Dark":
-                        app.RequestedThemeVariant = ThemeVariant.Dark;
-                        break;
-                    default:
-                        // 'Default' generally maps to the System preference
-                        app.RequestedThemeVariant = ThemeVariant.Default;
-                        break;
-                }
-            }
+        var folders = await desktop.MainWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Select X-Plane or MSFS FMS Folder",
+            AllowMultiple = false
+        });
+
+        if (folders.Count >= 1 && DataContext is SettingsViewModel vm)
+        {
+            vm.FmsFolderPath = folders[0].Path.LocalPath;
+        }
+    }
+
+    private async void BrowseDatabase_Click(object sender, RoutedEventArgs e)
+    {
+        var desktop = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+        if (desktop?.MainWindow == null) return;
+
+        var folders = await desktop.MainWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Select Custom Database Folder",
+            AllowMultiple = false
+        });
+
+        if (folders.Count >= 1 && DataContext is SettingsViewModel vm)
+        {
+            vm.CustomDatabasePath = folders[0].Path.LocalPath;
         }
     }
 }

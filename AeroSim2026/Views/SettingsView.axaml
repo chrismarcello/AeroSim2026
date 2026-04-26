@@ -9,17 +9,30 @@
     <Design.DataContext>
         <vm:SettingsViewModel/>		        
     </Design.DataContext>
-  <DockPanel>
-	  <TextBlock VerticalAlignment="Center" Margin="15,10,0,5" Text="Theme:" FontWeight="SemiBold" Opacity="0.7"/>
-                <ComboBox x:Name="ThemeComboBox"
-                          SelectedIndex="0"
-                          SelectionChanged="ThemeComboBox_SelectionChanged"
-                          HorizontalAlignment="Stretch"
-                          Margin="10,0,10,10">
-                    <ComboBoxItem Content="System"/>
-                    <ComboBoxItem Content="Light"/>
-                    <ComboBoxItem Content="Dark"/>
-                </ComboBox>
-  </DockPanel>
+  <ScrollViewer>
+	  <StackPanel Spacing="25" Margin="20" MaxWidth="800" HorizontalAlignment="Left">
+		  <TextBlock Text="Application Settings" FontSize="24" FontWeight="Bold"/>
+          <StackPanel Spacing="10">
+			  <TextBlock VerticalAlignment="Center" Margin="15,10,0,5" Text="Theme:" FontWeight="SemiBold" Opacity="0.7"/>
+                <ComboBox x:Name="ThemeComboBox"                    
+          ItemsSource="{Binding AvailableThemes}"
+          SelectedItem="{Binding SelectedTheme}"
+          HorizontalAlignment="Stretch"
+          Margin="10,0,10,10" />
+          </StackPanel>
+
+          <Grid ColumnDefinitions="Auto, *, Auto" RowDefinitions="Auto, 15, Auto" Margin="0,10,0,0">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="FMS Export Folder:" VerticalAlignment="Center" FontWeight="SemiBold" Opacity="0.7" Margin="0,0,15,0" />	
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FmsFolderPath}" VerticalAlignment="Center" Watermark="C:\Games\X-Plane 12\Output\FMS plans"/>
+              <Button Grid.Row="0" Grid.Column="2" Content="Browse..." Click="BrowseFmsFolder_Click" Margin="10,0,0,0" VerticalAlignment="Center"/>
+
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="Custom Nav Database:" VerticalAlignment="Center" FontWeight="SemiBold" Opacity="0.7" Margin="0,0,15,0"/>
+				<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CustomDatabasePath}" VerticalAlignment="Center" Watermark="Optional custom database.sqlite path"/>
+				<Button Grid.Row="2" Grid.Column="2" Content="Browse..." Click="BrowseDatabase_Click" Margin="10,0,0,0" VerticalAlignment="Center"/>
+          </Grid>
+
+          <Button Content="Save Settings" Command="{Binding SaveSettingsCommand}" Classes="accent" HorizontalAlignment="Right" Margin="0,20,0,0" Padding="20,8" />
+      </StackPanel>
+  </ScrollViewer>
   
 </UserControl>

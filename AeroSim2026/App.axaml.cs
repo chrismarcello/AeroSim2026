@@ -1,6 +1,7 @@
 using AeroSim2026.Core.Routing;
 using AeroSim2026.Core.Services;
 using AeroSim2026.EFModels;
+using AeroSim2026.Models;
 using AeroSim2026.ViewModels;
 using AeroSim2026.Views;
 using Avalonia;
@@ -8,6 +9,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,8 +39,15 @@ namespace AeroSim2026
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
 
+            // Load user settings (like theme preference) before creating the main window
+            var userSetting = UserSettingsService.LoadSettings();
+
+            // Apply theme based on user settings
+            ApplyTheme(userSetting.Theme);
+            
+
             // Check app folder and copy database
-            string connectionString = SetDefaultDatabaseLocation();
+            string connectionString = SetDefaultDatabaseLocation(userSetting.CustomDatabasePath);
 
             Log.Information($"Using connection string: {connectionString}");
 
@@ -93,42 +102,72 @@ namespace AeroSim2026
             }
         }
 
-        private string SetDefaultDatabaseLocation()
+        // Helper method to apply theme based on user settings
+        private void ApplyTheme(string theme)
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string databaseDirectory = Path.Combine(appDataPath, "AeroSim2026", "Data");
-            string dbFile = Path.Combine(appDataPath, "AeroSim2026", "Data", "aerosim2026.db");
-            string defaultDbLoc = Path.Combine(AppContext.BaseDirectory, "DB", "aerosim2026.db");
+            switch (theme)
+            {
+                case "Light":
+                    RequestedThemeVariant = ThemeVariant.Light;
+                    break;
+                case "Dark":
+                    RequestedThemeVariant = ThemeVariant.Dark;
+                    break;
+                default:
+                    RequestedThemeVariant = ThemeVariant.Default; // System preference
+                    break;
+            }
+        }
+        private string SetDefaultDatabaseLocation(string customDatabasePath)
+        {
+            string defaultDbLoc = Path.Combine(AppContext.BaseDirectory, "db", "aerosim2026.db");
+            string targetDirectory = "";
+            string targetDbFile = "";
 
-            if (!Directory.Exists(databaseDirectory))
+            if (!string.IsNullOrEmpty(customDatabasePath) && Directory.Exists(customDatabasePath))
+            {
+                targetDirectory = customDatabasePath;
+            }
+            else
+            {
+                string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                targetDirectory = Path.Combine(appDataPath, "AeroSim2026", "Data");
+            }
+
+            targetDbFile = Path.Combine(targetDirectory, "aerosim2026.db");
+
+            if (!Directory.Exists(targetDirectory))
             {
                 try
                 {
-                    Directory.CreateDirectory(databaseDirectory);
-                    File.Copy(defaultDbLoc, dbFile);
-                    Log.Information($"Database copied to {databaseDirectory}");
+                    Directory.CreateDirectory(targetDirectory);
+                    
+                    Log.Information($"Database copied to {targetDirectory}");
                 }
                 catch (IOException ex)
                 {
                     Log.Error(ex, "Error creating database directory or copying database");
                 }
             }
-            else
+            if (!File.Exists(targetDbFile))
             {
-                if (!File.Exists(dbFile))
+                try
                 {
-                    try
-                    {
-                        File.Copy(defaultDbLoc, dbFile);
-                        Log.Information($"Database copied to {databaseDirectory}");
-                    }
-                    catch (IOException ex)
-                    {
-                        Log.Error(ex, "Error copying database file");
-                    }
+                    File.Copy(defaultDbLoc, targetDbFile);
+                    Log.Information($"Database copied to {targetDbFile}");
+                }
+                catch (IOException ex)
+                {
+                    Log.Error(ex, "Error copying database file");
                 }
             }
-            return $"Data Source={dbFile}";
+            else
+            {
+                Log.Information($"Database already exists at {targetDbFile}, skipping copy.");
+            }
+
+            // 4. Point the app to the working file
+            return $"Data Source={targetDbFile}";
         }
     }
 }

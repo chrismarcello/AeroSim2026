@@ -1,5 +1,6 @@
-﻿using AeroSim2026.EFModels;
-using AeroSim2026.Core.Services;
+﻿using AeroSim2026.Core.Services;
+using AeroSim2026.EFModels;
+using AeroSim2026.Models;
 using Avalonia.Platform;
 using Mapsui;
 using Mapsui.Extensions;
@@ -16,6 +17,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.Intrinsics.Arm;
@@ -28,6 +30,7 @@ namespace AeroSim2026.ViewModels
     {
         private readonly IFlightServices _flightServices;
         private readonly IMapFeatureFactory _mapFeatureFactory;
+        private readonly IStatusService _statusService;
 
         public FlightPlan Flight { get; set; }
         private readonly Action<PageViewModelBase> _navigate;
@@ -39,7 +42,7 @@ namespace AeroSim2026.ViewModels
         private byte? _originalAircraftCrashed;
         private int? _originalCruiseAltitude;
         public ObservableCollection<FlightPlanRoute> FlightRoutes { get; } = new();
-
+        public ICommand ExportFmsCommand { get; }
         private Map? _flightMap;
         public Map? FlightMap
         {
@@ -104,10 +107,11 @@ namespace AeroSim2026.ViewModels
         public ICommand CancelCommand { get; }
         public override string Title => $" Flight Plan: {Flight.StartAirport.DisplayName} - {Flight.EndAirport.DisplayName}";
         
-        public FlightDetailViewModel(IFlightServices flightServices, IMapFeatureFactory mapFeatureFactory, FlightPlan flight, Action<PageViewModelBase> navigate, PageViewModelBase previousPage) 
+        public FlightDetailViewModel(IFlightServices flightServices, IMapFeatureFactory mapFeatureFactory, IStatusService statusService, FlightPlan flight, Action<PageViewModelBase> navigate, PageViewModelBase previousPage) 
         { 
             _flightServices = flightServices;
             _mapFeatureFactory = mapFeatureFactory;
+            _statusService = statusService;
             Flight = flight;
             _navigate = navigate;
             _previousPage = previousPage;
@@ -116,6 +120,8 @@ namespace AeroSim2026.ViewModels
             BeginEditCommand = ReactiveCommand.Create(BeginEdit);
             SaveCommand = ReactiveCommand.CreateFromTask(SaveAsync);
             CancelCommand = ReactiveCommand.Create(Cancel);
+
+            ExportFmsCommand = ReactiveCommand.Create(ExportFms);
 
             _ = SetupMapAsync();
         }
@@ -171,6 +177,31 @@ namespace AeroSim2026.ViewModels
                 Console.WriteLine($"Database save failed: {ex.Message}");
             }
         }
+        private void ExportFms()
+        {
+            var settings = UserSettingsService.LoadSettings();
+
+            if (string.IsNullOrWhiteSpace(settings.FmsFolderPath) || !Directory.Exists(settings.FmsFolderPath))
+            {
+                _statusService.StatusMessage = "Export Failed: Please set a valid FMS folder in Settings!";
+                return;
+            }
+
+            _statusService.IsBusy = true;
+            _statusService.StatusMessage = "Exporting FMS file...";
+
+            bool success = FmsExportService.ExportToXPlane(Flight, FlightRoutes, settings.FmsFolderPath);
+
+            _statusService.IsBusy = false;
+            if (success)
+            {
+                _statusService.StatusMessage = $"Successfully exported to {settings.FmsFolderPath}";
+            }
+            else
+            {
+                _statusService.StatusMessage = "Error: Failed to write FMS file.";
+            }
+        }
         private async Task SetupMapAsync()
         {
             LoggingWidget.ShowLoggingInMap = ActiveMode.No;
@@ -186,6 +217,16 @@ namespace AeroSim2026.ViewModels
             var routePoints = new List<Coordinate>();
 
             var detailedFlight = await _flightServices.GetFlightPlanWithRoutesAsync(Flight.FlightPlanId);
+
+            // Populate the FlightRoutes ObservableCollection for Export
+            if (detailedFlight != null && detailedFlight.FlightPlanRoutes.Any())
+            {
+                FlightRoutes.Clear();
+                foreach (var route in detailedFlight.FlightPlanRoutes.OrderBy(r => r.SequenceNumber))
+                {
+                    FlightRoutes.Add(route);
+                }
+            }
 
             // 1. Origin Airport
             markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(Flight.StartAirport.Laty, Flight.StartAirport.Lonx, Flight.StartAirport.Ident, "ORIGIN"));

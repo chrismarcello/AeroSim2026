@@ -35,7 +35,7 @@ namespace AeroSim2026.ViewModels
             Pages = new ObservableCollection<PageViewModelBase>
             {
                 new DashboardViewModel(),
-                new SavedFlightsViewModel(_logger,_flightServices, _mapFeatureFactory, Navigate),
+                new SavedFlightsViewModel(_logger,_flightServices, _mapFeatureFactory, StatusService, Navigate),
                 new CreateFlightViewModel(_aircraftServices, _airportServices, _navigationServices, _flightServices, StatusService, _flightRouteBuilder, _routingGraph, _mapFeatureFactory),
                 new RandomFlightViewModel(_aircraftServices, _airportServices, _navigationServices, _flightServices, StatusService, _flightRouteBuilder, _routingGraph, mapFeatureFactory),
                 new SettingsViewModel()

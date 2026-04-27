@@ -15,10 +15,20 @@
     </Design.DataContext>
     <Grid RowDefinitions="Auto, *" Margin="20">
     
-    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,20">
-        <Button Command="{Binding GoBackCommand}" Content="← Back" />
-        <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
-    </StackPanel>
+    <Grid Grid.Row="0" Margin="0,0,0,20">
+        
+        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left">
+            <Button Command="{Binding GoBackCommand}" Content="← Back" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <Button Content="Export to FMS" 
+                Command="{Binding ExportFmsCommand}" 
+                Classes="accent" 
+                HorizontalAlignment="Right" 
+                VerticalAlignment="Center"/>
+        
+    </Grid>
 
     <Grid Grid.Row="1" ColumnDefinitions="*, 2*, *" RowDefinitions="Auto, *" ShowGridLines="False" Height="800">
         

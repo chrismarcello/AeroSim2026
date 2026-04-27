@@ -19,6 +19,7 @@ namespace AeroSim2026.ViewModels
         private readonly IFlightServices _flightServices;
         private readonly IMapFeatureFactory _mapFeatureFactory;
         private readonly Action<PageViewModelBase> _navigateAction;
+        private readonly IStatusService _statusService;
 
         private FlightPlan? _selectedUnflownFlight;
         private FlightPlan? _selectedFlownFlight;
@@ -27,12 +28,13 @@ namespace AeroSim2026.ViewModels
         public ObservableCollection<FlightPlan> FlownFlights { get; } = new();
         public ObservableCollection<FlightPlan> UnflownFlights { get; } = new();
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
-        public SavedFlightsViewModel(ILogger<SavedFlightsViewModel> logger, IFlightServices flightServices, IMapFeatureFactory mapFeatureFactory, Action<PageViewModelBase> navigationAction)
+        public SavedFlightsViewModel(ILogger<SavedFlightsViewModel> logger, IFlightServices flightServices, IMapFeatureFactory mapFeatureFactory, IStatusService statusService, Action<PageViewModelBase> navigationAction)
         {
             _logger = logger;
             _flightServices = flightServices;
             _mapFeatureFactory = mapFeatureFactory;
             _navigateAction = navigationAction;
+            _statusService = statusService;
 
             this.WhenActivated((CompositeDisposable disposables) =>
             {
@@ -102,7 +104,7 @@ namespace AeroSim2026.ViewModels
         }
         private void NavigateToDetails(FlightPlan flight)
         {
-            var detailView = new FlightDetailViewModel(_flightServices, _mapFeatureFactory, flight, _navigateAction, this);
+            var detailView = new FlightDetailViewModel(_flightServices, _mapFeatureFactory, _statusService, flight, _navigateAction, this);
             _navigateAction(detailView);
         }
     }

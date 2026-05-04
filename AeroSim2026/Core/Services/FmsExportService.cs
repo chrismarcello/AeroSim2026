@@ -27,7 +27,7 @@ namespace AeroSim2026.Core.Services
                 StringBuilder fmsBuilder = new StringBuilder();
                 fmsBuilder.AppendLine("I");
                 fmsBuilder.AppendLine("1100 Version");
-                fmsBuilder.AppendLine("CYCLE 2310");
+                fmsBuilder.AppendLine("CYCLE 2406");
                 fmsBuilder.AppendLine($"ADEP {origin.Ident}");
                 fmsBuilder.AppendLine($"ADES {dest.Ident}");
 
@@ -35,7 +35,7 @@ namespace AeroSim2026.Core.Services
                 var routeList = routeItems?.ToList() ?? new List<FlightPlanRoute>();
                 int totalWaypoints = routeList.Count + 2; // +2 for origin and destination
 
-                fmsBuilder.AppendLine($"NUMENR {totalWaypoints}"); fmsBuilder.AppendLine($"1 {origin.Ident} {cruiseAlt}.000000 {origin.Laty} {origin.Lonx}");
+                fmsBuilder.AppendLine($"NUMENR {totalWaypoints}"); fmsBuilder.AppendLine($"1 {origin.Ident} ADEP {cruiseAlt}.000000 {origin.Laty} {origin.Lonx}");
 
                 foreach (var routeItem in routeList.OrderBy(r => r.SequenceNumber))
                 {
@@ -45,7 +45,7 @@ namespace AeroSim2026.Core.Services
                     }
                 }
 
-                fmsBuilder.AppendLine($"1 {dest.Ident} {cruiseAlt}.000000 {dest.Laty} {dest.Lonx}");
+                fmsBuilder.AppendLine($"1 {dest.Ident} ADES {cruiseAlt}.000000 {dest.Laty} {dest.Lonx}");
 
                 File.WriteAllText(fullPath, fmsBuilder.ToString());
                 return true;

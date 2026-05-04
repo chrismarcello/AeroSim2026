@@ -24,6 +24,7 @@ namespace AeroSim2026.ViewModels
         private readonly FlightRouteBuilder _flightRouteBuilder;
         private readonly RoutingGraph _routingGraph;
         private readonly IMapFeatureFactory _mapFeatureFactory;
+        private readonly Action<PageViewModelBase> _navigateAction;
 
         // Search Parameters
         private SimAircraft? _selectedAircraft;
@@ -140,13 +141,15 @@ namespace AeroSim2026.ViewModels
 
         public ReactiveCommand<Unit, Unit> CalculateRoutesCommand { get; }
         public ReactiveCommand<Unit, Unit> ClearFormCommand { get; }
+        public ReactiveCommand<Unit, Unit> NavigateToDetailsCommand { get; }
         public override string Title => "Random Flight Generator";
-        public RandomFlightViewModel(IAircraftServices aircraftServices, IAirportServices airportServices, INavigationServices navigationServices, IFlightServices flightServices, IStatusService statusService, FlightRouteBuilder flightRouteBuilder, RoutingGraph routingGraph, IMapFeatureFactory mapFeatureFactory)
+        public RandomFlightViewModel(IAircraftServices aircraftServices, IAirportServices airportServices, INavigationServices navigationServices, IFlightServices flightServices, IStatusService statusService, FlightRouteBuilder flightRouteBuilder, RoutingGraph routingGraph, IMapFeatureFactory mapFeatureFactory, Action<PageViewModelBase> navigateAction)
         {
             _aircraftServices = aircraftServices;
             _airportServices = airportServices;
             _navigationServices = navigationServices;
             _flightServices = flightServices;
+            _navigateAction = navigateAction;
             _statusService = statusService;
             _flightRouteBuilder = flightRouteBuilder;
             _routingGraph = routingGraph;
@@ -162,64 +165,65 @@ namespace AeroSim2026.ViewModels
             GenerateNewFlightCommand = ReactiveCommand.CreateFromTask(GenerateNewFlightAsync, canGenerateFlight);
 
             var canCalculateRoutes = this.WhenAnyValue(x => x.CurrentFlight)
-    .Select(flight => flight != null)
-    .ObserveOn(RxSchedulers.MainThreadScheduler);
+                .Select(flight => flight != null)
+                .ObserveOn(RxSchedulers.MainThreadScheduler);
 
             CalculateRoutesCommand = ReactiveCommand.CreateFromTask(CalculateRoutesAsync, canCalculateRoutes);
 
             SaveFlightCommand = ReactiveCommand.CreateFromTask<FlightItemViewModel>(SaveFlightAsync);
             ClearFormCommand = ReactiveCommand.Create(ClearForm);
+            
 
             // Fire and forget data load
             RxSchedulers.MainThreadScheduler.Schedule(LoadDropdownDataAsync);
 
             this.WhenAnyValue(x => x.SelectedFlightPath)
-    .ObserveOn(RxSchedulers.MainThreadScheduler) // Force UI thread to prevent black-screen crashes
-    .Subscribe(selectedPath =>
-    {
-        if (selectedPath != null && MapViewModel != null && CurrentFlight != null)
-        {
-            CurrentFlight.DistanceNm = selectedPath.Distance;
-            int speed = (int)(CurrentFlight.OriginalFlight.PlannedSpeed ?? 150);
-            CurrentFlight.EstFlightTimeSpan = _navigationServices.CalculateEte(selectedPath.Distance, speed);
-
-            var origin = CurrentFlight.OriginalFlight.OriginAirport;
-            var dest = CurrentFlight.OriginalFlight.ArrivalAirport;
-
-            var markerFeatures = new List<Mapsui.Nts.GeometryFeature>();
-
-
-            // Add Enroute
-            if (selectedPath.GeneratedFlightPlanRoutes != null)
-            {
-                foreach (var leg in selectedPath.GeneratedFlightPlanRoutes)
+            .ObserveOn(RxSchedulers.MainThreadScheduler) // Force UI thread to prevent black-screen crashes
+                .Subscribe(selectedPath =>
                 {
-                    var node = _routingGraph.GetNode(leg.WaypointId);
-                    if (node != null && !double.IsNaN(node.Latitude) && !double.IsNaN(node.Longitude))
+                    if (selectedPath != null && MapViewModel != null && CurrentFlight != null)
                     {
-                        if (origin != null && node.Identifier?.Trim() == origin.Ident?.Trim()) continue;
-                        if (dest != null && node.Identifier?.Trim() == dest.Ident?.Trim()) continue;
+                        CurrentFlight.DistanceNm = selectedPath.Distance;
+                        int speed = (int)(CurrentFlight.OriginalFlight.PlannedSpeed ?? 150);
+                        CurrentFlight.EstFlightTimeSpan = _navigationServices.CalculateEte(selectedPath.Distance, speed);
 
-                        markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier!, node.NavType));
-                    }
-                }
-            }
+                        var origin = CurrentFlight.OriginalFlight.OriginAirport;
+                        var dest = CurrentFlight.OriginalFlight.ArrivalAirport;
+
+                        var markerFeatures = new List<Mapsui.Nts.GeometryFeature>();
+
+
+                // Add Enroute
+                        if (selectedPath.GeneratedFlightPlanRoutes != null)
+                        {
+                            foreach (var leg in selectedPath.GeneratedFlightPlanRoutes)
+                            {
+                                var node = _routingGraph.GetNode(leg.WaypointId);
+                                if (node != null && !double.IsNaN(node.Latitude) && !double.IsNaN(node.Longitude))
+                                {
+                                    if (origin != null && node.Identifier?.Trim() == origin.Ident?.Trim()) continue;
+                                    if (dest != null && node.Identifier?.Trim() == dest.Ident?.Trim()) continue;
+
+                                    markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier!, node.NavType));
+                                }
+                            }
+                        }
 
             // SAFELY Create the Route Line (Requires at least 2 valid points!)
-            Mapsui.Nts.GeometryFeature? routeFeature = null;
-            var validWaypoints = selectedPath.Waypoints?
-                .Where(w => !double.IsNaN(w.X) && !double.IsNaN(w.Y) && !double.IsInfinity(w.X) && !double.IsInfinity(w.Y))
-                .ToList();
+                    Mapsui.Nts.GeometryFeature? routeFeature = null;
+                    var validWaypoints = selectedPath.Waypoints?
+                        .Where(w => !double.IsNaN(w.X) && !double.IsNaN(w.Y) && !double.IsInfinity(w.X) && !double.IsInfinity(w.Y))
+                        .ToList();
 
-            if (validWaypoints != null && validWaypoints.Count > 1)
-            {
-                routeFeature = _mapFeatureFactory.CreateRouteLine(validWaypoints);
-            }
+                    if (validWaypoints != null && validWaypoints.Count > 1)
+                    {
+                        routeFeature = _mapFeatureFactory.CreateRouteLine(validWaypoints);
+                    }
 
-            // Pass to MapViewModel
-            MapViewModel.UpdateRoute(routeFeature, markerFeatures);
-        }});
-        }
+                    // Pass to MapViewModel
+                        MapViewModel.UpdateRoute(routeFeature, markerFeatures);
+                    }});
+                }
 
         private async void LoadDropdownDataAsync()
         {
@@ -454,6 +458,11 @@ namespace AeroSim2026.ViewModels
                     });
                 }
             }
+        }
+        private void NavigateToDetails(FlightPlan flight)
+        {
+            var detailView = new FlightDetailViewModel(_flightServices, _mapFeatureFactory, _statusService, flight, _navigateAction, this);
+            _navigateAction(detailView);
         }
         public void ClearForm()
         {

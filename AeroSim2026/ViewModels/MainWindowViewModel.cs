@@ -37,7 +37,7 @@ namespace AeroSim2026.ViewModels
                 new DashboardViewModel(),
                 new SavedFlightsViewModel(_logger,_flightServices, _mapFeatureFactory, StatusService, Navigate),
                 new CreateFlightViewModel(_aircraftServices, _airportServices, _navigationServices, _flightServices, StatusService, _flightRouteBuilder, _routingGraph, _mapFeatureFactory),
-                new RandomFlightViewModel(_aircraftServices, _airportServices, _navigationServices, _flightServices, StatusService, _flightRouteBuilder, _routingGraph, mapFeatureFactory),
+                new RandomFlightViewModel(_aircraftServices, _airportServices, _navigationServices, _flightServices, StatusService, _flightRouteBuilder, _routingGraph, mapFeatureFactory, Navigate),
                 new SettingsViewModel()
                 
             };
@@ -72,11 +72,6 @@ namespace AeroSim2026.ViewModels
             StatusService.IsBusy = true;
             StatusService.StatusMessage = "Warming up...";
 
-            // Load the graph in the background so the UI doesn't freeze on startup
-            //await Task.Run(async () =>
-            //{
-            //    await _navigationServices.InitializeRoutingGraphAsync(_routingGraph);
-            //});
             await Task.Delay(500); // Simulate some startup delay
             StatusService.IsBusy = false;
             StatusService.StatusMessage = "Ready";

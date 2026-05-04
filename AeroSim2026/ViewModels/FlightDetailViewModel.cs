@@ -35,7 +35,7 @@ namespace AeroSim2026.ViewModels
         public FlightPlan Flight { get; set; }
         private readonly Action<PageViewModelBase> _navigate;
         private readonly PageViewModelBase _previousPage;
-        private static string? _cachedTargetIconBase64;
+        //private static string? _cachedTargetIconBase64;
         public string CrashedDisplayText => IsCrashed ? "Yes" : "No";
         private string? _originalComments;
         private DateTime? _originalDateFlown;

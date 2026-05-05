@@ -89,6 +89,9 @@ namespace AeroSim2026.Core.Routing
                     }
                 });
             }
+
+            ApplyVnavProfiles(origin, destination, routeList, cruiseAltitude);
+
             return routeList;
         }
 
@@ -109,6 +112,55 @@ namespace AeroSim2026.Core.Routing
                 {
                     await _navigationServices.InitializeRoutingGraphAsync(_graph);
                 });
+            }
+        }
+
+        private void ApplyVnavProfiles(Airport origin, Airport destination, List<FlightPlanRoute> routeList, int cruiseAltitude)
+        {
+            if (routeList == null || !routeList.Any()) return;
+
+            double originAlt = 0;
+            double destAlt = 0;
+
+            const double climbGradient = 500.0;
+            const double descentGradient = 318.0;
+
+            var distancesFromOrigin = new List<double>();
+            double accumulatedDist = 0;
+            double currentLat = origin.Laty;
+            double currentLon = origin.Lonx;
+
+            foreach (var routeItem in routeList)
+            {
+                if (routeItem.Waypoint != null)
+                {
+                    double legDist = GeoMath.Distance(currentLat, currentLon, routeItem.Waypoint.Laty, routeItem.Waypoint.Lonx);
+                    accumulatedDist += legDist;
+                    distancesFromOrigin.Add(accumulatedDist);
+
+                    currentLat = routeItem.Waypoint.Laty;
+                    currentLon = routeItem.Waypoint.Lonx;
+                }
+                else
+                {
+                    distancesFromOrigin.Add(accumulatedDist);
+                }
+            }
+
+            double finalLegDist = GeoMath.Distance(currentLat, currentLon, destination.Laty, destination.Lonx);
+            double totalRouteDistance = accumulatedDist + finalLegDist;
+
+            for (int i = 0; i < routeList.Count; i++)
+            {
+                double distFromOrig = distancesFromOrigin[i];
+                double distToDest = totalRouteDistance - distFromOrig;
+
+                double maxClimbAlt = originAlt + (distFromOrig * climbGradient);
+                double maxDescAlt = destAlt + (distToDest * descentGradient);
+
+                double calculatedAlt = Math.Min(cruiseAltitude, Math.Min(maxClimbAlt, maxDescAlt));
+
+                routeList[i].PlannedAltitude = Math.Round(calculatedAlt / 100.0) * 100.0; // Round to nearest 100 ft
             }
         }
     }

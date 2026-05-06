@@ -5,6 +5,6 @@ namespace AeroSim2026.EFModels
     public partial class FlightPlanRoute
     {
         [NotMapped]
-        public double PlannedAltitude { get; set; }
+        public double? PlannedAltitude { get; set; }
     }
 }

@@ -115,7 +115,7 @@ namespace AeroSim2026.ViewModels
             if (routeLayer == null)
             {
                 routeLayer = new MemoryLayer { Name = "Route", Style = new VectorStyle { Fill = new Brush { Color = Color.Transparent, FillStyle = FillStyle.Hollow } } };
-                Map.Layers.Add(routeLayer);
+                Map.Layers.Insert(1, routeLayer);
             }
 
             var markerLayer = Map.Layers.FirstOrDefault(l => l.Name == "Markers") as MemoryLayer;

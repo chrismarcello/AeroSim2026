@@ -16,7 +16,7 @@ namespace AeroSim2026.Views
         public MainWindow()
         {
             InitializeComponent();
-            this.Title = "AeroSim 2026 Flight Sim Tracker v0.0.30";
+            this.Title = "AeroSim 2026 Flight Sim Tracker v0.0.32";
             this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             this.WindowState = WindowState.Maximized;
 

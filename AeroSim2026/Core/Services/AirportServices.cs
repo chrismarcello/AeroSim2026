@@ -72,7 +72,9 @@ namespace AeroSim2026.Core.Services
                         .ThenInclude(al => al.GeoAdmin2)
                     .Include(a => a.AirportsComs)
                     .Include(a => a.Runways)
-
+                        .ThenInclude(r => r.PrimaryEnd)
+                     .Include(a => a.Runways)
+                        .ThenInclude(r => r.SecondaryEnd)
                     .FirstOrDefaultAsync(a => a.AirportId == airportId) ?? null;
 #pragma warning restore CS8603 // Possible null reference return.
             }
@@ -107,7 +109,9 @@ namespace AeroSim2026.Core.Services
                         .ThenInclude(al => al.GeoAdmin2)
                     .Include(a => a.AirportsComs)
                     .Include(a => a.Runways)
-
+                        .ThenInclude(r => r.PrimaryEnd)
+                    .Include(a => a.Runways)
+                        .ThenInclude(r => r.SecondaryEnd)
                     .FirstOrDefaultAsync(a => a.Ident != null && a.Ident.ToLower() == searchIdent);
 #pragma warning restore CS8603 // Possible null reference return.
             }
@@ -168,6 +172,9 @@ namespace AeroSim2026.Core.Services
                                 .ThenInclude(al => al.GeoAdmin2)
                             .Include(a => a.AirportsComs)
                             .Include(a => a.Runways)
+                                .ThenInclude(r => r.PrimaryEnd)
+                            .Include(a => a.Runways)
+                                .ThenInclude(r => r.SecondaryEnd)
                             .OrderBy(a => EF.Functions.Random())
                                 .FirstOrDefaultAsync();
                         }
@@ -188,6 +195,9 @@ namespace AeroSim2026.Core.Services
                                 .ThenInclude(al => al.GeoAdmin2)
                             .Include(a => a.AirportsComs)
                             .Include(a => a.Runways)
+                                .ThenInclude(r => r.PrimaryEnd)
+                            .Include(a => a.Runways)
+                                .ThenInclude(r => r.SecondaryEnd)
                             .OrderBy(a => EF.Functions.Random())
                                 .FirstOrDefaultAsync();
                         }
@@ -211,6 +221,10 @@ namespace AeroSim2026.Core.Services
                                 .ThenInclude(al => al.GeoAdmin2)
                             .Include(a => a.AirportsComs)
                             .Include(a => a.Runways)
+                                .ThenInclude(r => r.PrimaryEnd)
+                            .Include(a => a.Runways)
+                                .ThenInclude(r => r.SecondaryEnd)
+
                             .OrderBy(a => EF.Functions.Random())
                                 .FirstOrDefaultAsync();
                         }
@@ -231,6 +245,9 @@ namespace AeroSim2026.Core.Services
                                 .ThenInclude(al => al.GeoAdmin2)
                             .Include(a => a.AirportsComs)
                             .Include(a => a.Runways)
+                                .ThenInclude(r => r.PrimaryEnd)
+                            .Include(a => a.Runways)
+                                .ThenInclude(r => r.SecondaryEnd)
                             .OrderBy(a => EF.Functions.Random())
                                 .FirstOrDefaultAsync();
                         }

@@ -142,20 +142,27 @@
                 </StackPanel>
             </Button>
                     
-            <Button Grid.Column="1" 
-                Command="{Binding SaveFlightPlanCommand}" 
-                Theme="{DynamicResource SolidAccentButtonTheme}" 
-                Padding="8,4" 
-                FontWeight="Bold" 
-                HorizontalAlignment="Right" 
-                HorizontalContentAlignment="Center">
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+    <Button Command="{Binding SaveFlightPlanCommand}" 
+            Theme="{DynamicResource SolidAccentButtonTheme}" 
+            Padding="8,4" FontWeight="Bold"
+            IsVisible="{Binding CanSaveFlight}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <ic:FluentIcon Icon="Save" FontSize="16" VerticalAlignment="Center"/>
+            <TextBlock Text="Save Flight Plan" VerticalAlignment="Center"/>
+        </StackPanel>
+    </Button>
     
-            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Stretch">
-                <ic:FluentIcon Icon="Save" FontSize="16" VerticalAlignment="Center"/>
-                <TextBlock Text="Save Flight Plan" VerticalAlignment="Center"/>
-            </StackPanel>
-    
-            </Button>
+    <Button Command="{Binding NavigateToDetailsCommand}" 
+            Background="#81D4FA" Foreground="Black"
+            Padding="8,4" FontWeight="Bold"
+            IsVisible="{Binding HasSavedFlight}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <ic:FluentIcon Icon="Open" FontSize="16" VerticalAlignment="Center"/>
+            <TextBlock Text="View Details" VerticalAlignment="Center"/>
+        </StackPanel>
+    </Button>
+</StackPanel>
         </Grid>
                         </StackPanel>
                     </ScrollViewer>

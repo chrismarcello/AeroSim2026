@@ -104,6 +104,19 @@ namespace AeroSim2026.ViewModels
             get => _mapViewModel;
             private set => this.RaiseAndSetIfChanged(ref _mapViewModel, value);
         }
+        private FlightPlan? _savedFlightPlan;
+        public FlightPlan? SavedFlightPlan
+        {
+            get => _savedFlightPlan;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _savedFlightPlan, value);
+                this.RaisePropertyChanged(nameof(HasSavedFlight));
+                this.RaisePropertyChanged(nameof(CanSaveFlight));
+            }
+        }
+        public bool HasSavedFlight => SavedFlightPlan != null;
+        public bool CanSaveFlight => SavedFlightPlan == null;
 
         // Collections
         public ObservableCollection<SimAircraft> AircraftList { get; } = new();
@@ -171,6 +184,8 @@ namespace AeroSim2026.ViewModels
             CalculateRoutesCommand = ReactiveCommand.CreateFromTask(CalculateRoutesAsync, canCalculateRoutes);
 
             SaveFlightCommand = ReactiveCommand.CreateFromTask<FlightItemViewModel>(SaveFlightAsync);
+            
+            NavigateToDetailsCommand = ReactiveCommand.Create(() => NavigateToDetails(SavedFlightPlan!));
             ClearFormCommand = ReactiveCommand.Create(ClearForm);
             
 
@@ -429,6 +444,11 @@ namespace AeroSim2026.ViewModels
                 // 3. Save to the database using your injected service
                 // (Assuming _flightServices.SaveFlightPlanAsync returns void or Task. Update if it returns a bool)
                 await _flightServices.SaveFlightPlanAsync(newPlan);
+
+                newPlan.StartAirport = origin;
+                newPlan.EndAirport = dest;
+
+                SavedFlightPlan = newPlan;
 
                 _statusService.StatusMessage = "Flight Plan Saved Successfully!";
             }

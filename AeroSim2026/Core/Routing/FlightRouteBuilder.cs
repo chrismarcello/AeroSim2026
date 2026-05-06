@@ -115,7 +115,7 @@ namespace AeroSim2026.Core.Routing
             }
         }
 
-        private void ApplyVnavProfiles(Airport origin, Airport destination, List<FlightPlanRoute> routeList, int cruiseAltitude)
+        public static void ApplyVnavProfiles(Airport origin, Airport destination, List<FlightPlanRoute> routeList, int cruiseAltitude)
         {
             if (routeList == null || !routeList.Any()) return;
 

@@ -30,6 +30,7 @@ namespace AeroSim2026.ViewModels
         private readonly INavigationServices _navigationServices;
         private readonly IFlightServices _flightServices;
         private readonly IStatusService _statusService;
+        private readonly Action<PageViewModelBase> _navigateAction;
         private readonly FlightRouteBuilder _flightRouteBuilder;
         private readonly RoutingGraph _routingGraph;
         private readonly IMapFeatureFactory _mapFeatureFactory; // NEW FACTORY INJECTED
@@ -51,7 +52,8 @@ namespace AeroSim2026.ViewModels
         private int _plannedSpeed = 150;
         private double _totalDistance;
         private TimeSpan _estimatedTime;
-        private MemoryLayer _routeLayer;
+        private MemoryLayer _routeLineLayer;
+        private MemoryLayer _routeMarkerLayer;
         private RouteOption? _selectedRouteOption;
 
         public SimAircraft? SelectedAircraft
@@ -109,17 +111,33 @@ namespace AeroSim2026.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedRouteOption, value);
         }
 
+        private FlightPlan? _savedFlightPlan;
+        public FlightPlan? SavedFlightPlan
+        {
+            get => _savedFlightPlan;
+            set 
+            { 
+                this.RaiseAndSetIfChanged(ref _savedFlightPlan, value);
+                this.RaisePropertyChanged(nameof(HasSavedFlight));
+                this.RaisePropertyChanged(nameof(CanSaveFlight));
+            }
+        }
+
+        public bool HasSavedFlight => SavedFlightPlan != null;
+        public bool CanSaveFlight => SavedFlightPlan == null;
+
         public ReactiveCommand<Airport, Unit> SetOriginCommand { get; }
         public ReactiveCommand<Airport, Unit> SetDestCommand { get; }
         public ReactiveCommand<Airport, Unit> ViewOnMapCommand { get; }
         public ReactiveCommand<Unit, Unit> BuildFlightPathCommand { get; }
         public ReactiveCommand<Unit, Unit> SaveFlightPlanCommand { get; }
+        public ReactiveCommand<Unit, Unit> NavigateToDetailsCommand { get; }
         public ReactiveCommand<Unit, Unit> ClearFormCommand { get; }
 
         private const string CruiseSpeedPropertyId = "b7257438-0d1e-11f1-8f56-00155dcf273e";
 
         // ADD FACTORY TO CONSTRUCTOR
-        public CreateFlightViewModel(IAircraftServices aircraftServices, IAirportServices airportServices, INavigationServices navigationServices, IFlightServices flightServices, IStatusService statusService, FlightRouteBuilder flightRouteBuilder, RoutingGraph routingGraph, IMapFeatureFactory mapFeatureFactory)
+        public CreateFlightViewModel(IAircraftServices aircraftServices, IAirportServices airportServices, INavigationServices navigationServices, IFlightServices flightServices, IStatusService statusService, FlightRouteBuilder flightRouteBuilder, RoutingGraph routingGraph, IMapFeatureFactory mapFeatureFactory, Action<PageViewModelBase> navigateAction)
         {
             _aircraftServices = aircraftServices;
             _airportServices = airportServices;
@@ -129,9 +147,18 @@ namespace AeroSim2026.ViewModels
             _flightRouteBuilder = flightRouteBuilder;
             _routingGraph = routingGraph;
             _mapFeatureFactory = mapFeatureFactory;
+            _navigateAction = navigateAction;
 
             SetOriginCommand = ReactiveCommand.Create<Airport>(airport => { OriginAirport = airport; });
             SetDestCommand = ReactiveCommand.Create<Airport>(airport => { DestAirport = airport; });
+            NavigateToDetailsCommand = ReactiveCommand.Create(() =>
+            {
+                if (SavedFlightPlan != null)
+                {
+                    var detailView = new FlightDetailViewModel(_flightServices, _mapFeatureFactory, _statusService, SavedFlightPlan, _navigateAction, this);
+                    _navigateAction(detailView);
+                }
+            });
 
             this.WhenAnyValue(x => x.OriginAirport)
                 .Where(airport => airport != null)
@@ -293,6 +320,10 @@ namespace AeroSim2026.ViewModels
                     }
 
                     await _flightServices.SaveFlightPlanAsync(newPlan);
+
+                    newPlan.StartAirport = OriginAirport;
+                    newPlan.EndAirport = DestAirport;
+                    SavedFlightPlan = newPlan;
                     _statusService.StatusMessage = "Flight plan saved successfully!";
                     await Task.Delay(5000);
                 }
@@ -481,16 +512,8 @@ namespace AeroSim2026.ViewModels
 
             map.Layers.Add(Mapsui.Tiling.OpenStreetMap.CreateTileLayer("AeroSim2026/1.0"));
 
-            _routeLayer = new MemoryLayer
-            {
-                Name = "Route",
-                Style = new VectorStyle
-                {
-                    Line = new Pen(Color.Magenta, 4),
-                    Fill = null
-                }
-            };
-            map.Layers.Add(_routeLayer);
+            _routeLineLayer = new MemoryLayer { Name = "RouteLine", Style = null };
+            map.Layers.Add(_routeLineLayer);
 
             _majorAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 2), Color.Red, 0, double.MaxValue);
             _regionalAirportsLayer = CreateAirportLayer(_airports.Where(a => a.AirportType == 3), Color.Orange, 0, 4000);
@@ -502,7 +525,9 @@ namespace AeroSim2026.ViewModels
             map.Layers.Add(_smallAirportsLayer);
             map.Layers.Add(_milAirportsLayer);
 
-            
+            _routeMarkerLayer = new MemoryLayer { Name = "RouteMarkers", Style = null };
+            map.Layers.Add(_routeMarkerLayer);
+
             map.Widgets.Add(CreateZoomInOutWidget(Orientation.Horizontal, VerticalAlignment.Top, HorizontalAlignment.Right));
 
             FlightMap = map;
@@ -551,8 +576,9 @@ namespace AeroSim2026.ViewModels
             if (_smallAirportsLayer != null) _smallAirportsLayer.Enabled = !hideClutter;
             if (_milAirportsLayer != null) _milAirportsLayer.Enabled = !hideClutter;
 
-            if (_routeLayer == null) return;
-            var newFeatures = new List<GeometryFeature>();
+            if (_routeLineLayer == null || _routeMarkerLayer == null) return;
+            var lineFeatures = new List<GeometryFeature>();
+            var markerFeatures = new List<GeometryFeature>();
 
             try
             {
@@ -564,13 +590,14 @@ namespace AeroSim2026.ViewModels
 
                     if (validWaypoints.Count > 1)
                     {
-                        newFeatures.Add(_mapFeatureFactory.CreateRouteLine(validWaypoints));
+                        // Put the line into the line list
+                        lineFeatures.Add(_mapFeatureFactory.CreateRouteLine(validWaypoints));
                     }
 
-                    // ALWAYS add Origin marker
                     if (OriginAirport != null)
                     {
-                        newFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(OriginAirport.Laty, OriginAirport.Lonx, OriginAirport.Ident, "ORIGIN"));
+                        // Put markers into the marker list
+                        markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(OriginAirport.Laty, OriginAirport.Lonx, OriginAirport.Ident, "ORIGIN"));
                     }
 
                     // Add intermediate Enroute markers
@@ -585,7 +612,7 @@ namespace AeroSim2026.ViewModels
                                 if (OriginAirport != null && node.Identifier == OriginAirport.Ident) continue;
                                 if (DestAirport != null && node.Identifier == DestAirport.Ident) continue;
 
-                                newFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier, node.NavType));
+                                markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier, node.NavType));
                             }
                         }
                     }
@@ -593,7 +620,7 @@ namespace AeroSim2026.ViewModels
                     // ALWAYS add Destination marker
                     if (DestAirport != null)
                     {
-                        newFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(DestAirport.Laty, DestAirport.Lonx, DestAirport.Ident, "DESTINATION"));
+                        markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(DestAirport.Laty, DestAirport.Lonx, DestAirport.Ident, "DESTINATION"));
                     }
 
                     // Auto-Center logic
@@ -626,8 +653,12 @@ namespace AeroSim2026.ViewModels
                     }
                 }
 
-                _routeLayer.Features = newFeatures;
-                _routeLayer.DataHasChanged();
+                _routeLineLayer.Features = lineFeatures;
+                _routeLineLayer.DataHasChanged();
+
+                _routeMarkerLayer.Features = markerFeatures;
+                _routeMarkerLayer.DataHasChanged();
+
                 FlightMap?.Refresh();
             }
             catch (Exception ex)
@@ -659,12 +690,13 @@ namespace AeroSim2026.ViewModels
             SelectedRouteOption = null;
             TotalDistance = 0;
             EstimatedTime = TimeSpan.Zero;
+            SavedFlightPlan = null;
 
             // Wipe the map route
-            if (_routeLayer != null)
+            if (_routeLineLayer != null)
             {
-                _routeLayer.Features = new List<GeometryFeature>();
-                _routeLayer.DataHasChanged();
+                _routeLineLayer.Features = new List<GeometryFeature>();
+                _routeMarkerLayer.DataHasChanged();
                 FlightMap?.Refresh();
             }
 

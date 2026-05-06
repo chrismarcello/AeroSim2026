@@ -1,6 +1,6 @@
-﻿using AeroSim2026.EFModels;
+﻿using AeroSim2026.Core.Routing; // Required to access FlightRouteBuilder and VNAV math
+using AeroSim2026.EFModels;
 using AeroSim2026.Models;
-using AeroSim2026.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,25 +19,37 @@ namespace AeroSim2026.Core.Services
             {
                 var origin = flight.StartAirport;
                 var dest = flight.EndAirport;
-                var cruiseAlt = flight.CruiseAltitude > 0 ? flight.CruiseAltitude : 5000;
+
+                // Safely extract the nullable integer into a strict int
+                int cruiseAlt = (flight.CruiseAltitude.HasValue && flight.CruiseAltitude.Value > 0)
+                                ? flight.CruiseAltitude.Value
+                                : 5000;
 
                 string fileName = $"{origin.Ident}_to_{dest.Ident}.fms";
                 string fullPath = Path.Combine(folderPath, fileName);
 
+                // 1. Create a LIST and STRICTLY ORDER IT before doing any math!
+                var routeList = routeItems?.OrderBy(r => r.SequenceNumber).ToList() ?? new List<FlightPlanRoute>();
+                int totalWaypoints = routeList.Count + 2;
+
+                // 2. Always recalculate the altitudes right before export
+                // (This guarantees the math is correct, even if not saved to the DB)
+                if (routeList.Any())
+                {
+                    FlightRouteBuilder.ApplyVnavProfiles(origin, dest, routeList, cruiseAlt);
+                }
+
+                // 3. Build the FMS File
                 StringBuilder fmsBuilder = new StringBuilder();
                 fmsBuilder.AppendLine("I");
                 fmsBuilder.AppendLine("1100 Version");
                 fmsBuilder.AppendLine("CYCLE 2406");
                 fmsBuilder.AppendLine($"ADEP {origin.Ident}");
                 fmsBuilder.AppendLine($"ADES {dest.Ident}");
+                fmsBuilder.AppendLine($"NUMENR {totalWaypoints}");
+                fmsBuilder.AppendLine($"1 {origin.Ident} ADEP {origin.Altitude:0.000000} {origin.Laty} {origin.Lonx}");
 
-                // Calculte total waypoints
-                var routeList = routeItems?.ToList() ?? new List<FlightPlanRoute>();
-                int totalWaypoints = routeList.Count + 2; // +2 for origin and destination
-
-                fmsBuilder.AppendLine($"NUMENR {totalWaypoints}"); fmsBuilder.AppendLine($"1 {origin.Ident} ADEP {origin.Altitude:0.000000} {origin.Laty} {origin.Lonx}");
-
-                foreach (var routeItem in routeList.OrderBy(r => r.SequenceNumber))
+                foreach (var routeItem in routeList)
                 {
                     if (routeItem.Waypoint != null)
                     {
@@ -50,8 +62,9 @@ namespace AeroSim2026.Core.Services
                 File.WriteAllText(fullPath, fmsBuilder.ToString());
                 return true;
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
+                // If it ever fails again, it will print the exact reason to your Visual Studio Output Window!
                 System.Diagnostics.Debug.WriteLine($"Failed to export FMS: {ex.Message}");
                 return false;
             }

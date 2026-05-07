@@ -1,4 +1,5 @@
-﻿using AeroSim2026.Core.Services;
+﻿using AeroSim2026.Core.Routing;
+using AeroSim2026.Core.Services;
 using AeroSim2026.EFModels;
 using AeroSim2026.Models;
 using Avalonia.Platform;
@@ -222,10 +223,19 @@ namespace AeroSim2026.ViewModels
             if (detailedFlight != null && detailedFlight.FlightPlanRoutes.Any())
             {
                 FlightRoutes.Clear();
-                foreach (var route in detailedFlight.FlightPlanRoutes.OrderBy(r => r.SequenceNumber))
+
+                var orderedRoutes = detailedFlight.FlightPlanRoutes.OrderBy(r => r.SequenceNumber).ToList();
+
+                int cruiseAlt = Flight.CruiseAltitude ?? 5000;
+                FlightRouteBuilder.ApplyVnavProfiles(Flight.StartAirport, Flight.EndAirport, orderedRoutes, cruiseAlt);
+
+                foreach (var route in orderedRoutes)
                 {
                     FlightRoutes.Add(route);
                 }
+
+                // Overwrite main flight plan route points with the Vnav-enhanced points for mapping purposes
+                Flight.FlightPlanRoutes = orderedRoutes;
             }
 
             // 1. Origin Airport

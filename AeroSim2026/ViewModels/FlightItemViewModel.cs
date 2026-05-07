@@ -12,8 +12,7 @@ namespace AeroSim2026.ViewModels
         // --- Header Properties ---
         public string DepartIdent { get; }
         public string DestIdent { get; }
-        //public double DistanceNm { get; }
-        //public string? EstFlightTime { get; }
+        
         private double _distanceNm;
         public double DistanceNm
         {

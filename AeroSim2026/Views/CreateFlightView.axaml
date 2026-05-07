@@ -180,7 +180,7 @@
                     </StackPanel>
                 </Border>
                 
-                <Border Grid.Row="1" Background="#222" CornerRadius="5" Padding="10" Margin="0,10">
+                <Border Grid.Row="1" Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="5" Padding="10" Margin="0,10">
                     <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, *">
                         
                         <TextBlock Grid.Column="0" Grid.Row="0" 
@@ -202,54 +202,54 @@
                             </StackPanel>
                         </ToolTip.Tip>
                     </TextBlock>
-                    <TextBlock Grid.Column="1" Text="{Binding PropertyValue}" FontWeight="Bold" Foreground="White" />
-                    <TextBlock Grid.Column="2" Text="{Binding Unit}" FontStyle="Italic" Foreground="#888" Margin="5,0,0,0"/>
+                    <TextBlock Grid.Column="1" Text="{Binding PropertyValue}" FontWeight="Bold" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+                    <TextBlock Grid.Column="2" Text="{Binding Unit}" FontStyle="Italic" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}" Margin="5,0,0,0"/>
                 </Grid>
             </DataTemplate>
         </ItemsControl.ItemTemplate>
     </ItemsControl>
 </ScrollViewer>
 
-                        <TextBlock Grid.Column="1" Grid.Row="0" Text="Airport Details" FontWeight="SemiBold" Margin="10,0,0,5" Foreground="White"/>
+                        <TextBlock Grid.Column="1" Grid.Row="0" Text="Airport Details" FontWeight="SemiBold" Margin="10,0,0,5" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                         
                         <Grid Grid.Column="1" Grid.Row="1" ColumnDefinitions="*, *" Margin="10,0,0,0" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
-                            <Border Grid.Column="0" BorderBrush="#333" BorderThickness="0,0,1,0" Padding="0,0,10,0">
+                            <Border Grid.Column="0" BorderBrush="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" BorderThickness="0,0,1,0" Padding="0,0,10,0">
                                 <StackPanel Spacing="5">
                                     <TextBlock Text="ORIGIN" FontSize="10" Foreground="Gray" FontWeight="Bold"/>
-                                    <TextBlock Text="{Binding OriginAirport.Ident, FallbackValue='----'}" FontWeight="Bold" Foreground="#3498db" FontSize="16"/>
+                                    <TextBlock Text="{Binding OriginAirport.Ident, FallbackValue='----'}" FontWeight="Bold" Foreground="#FF8C00" FontSize="16"/>
                                     
-                                    <TextBlock Text="{Binding OriginAirport.AirportName}" TextWrapping="Wrap" FontSize="11" Foreground="White"/>
-                                    <TextBlock Text="{Binding OriginAirport.DisplayLocation}" TextWrapping="Wrap" FontSize="11" Foreground="White"/>
+                                    <TextBlock Text="{Binding OriginAirport.AirportName}" TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                                    <TextBlock Text="{Binding OriginAirport.DisplayLocation}" TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                     
                                     <Separator Background="#333" Margin="0,5"/>
                                     
                                     <Grid ColumnDefinitions="Auto, *, *" RowDefinitions="Auto, Auto">
                                         <TextBlock Grid.Row="0" Text="Elev:" Foreground="Gray" Margin="0,0,5,0" FontSize="11"/>
-                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding OriginAirport.Altitude}" FontSize="11" Foreground="White"/>
-                                        <TextBlock Grid.Row="0" Grid.Column="2" Text=" ft" FontSize="11" Foreground="White"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding OriginAirport.Altitude}" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="2" Text=" ft" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                         <TextBlock Grid.Row="1" Text="Rwy:" Foreground="Gray" Margin="0,0,5,0" FontSize="11"/>
-                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding OriginAirport.LongestRunwayLength}" FontSize="11" Foreground="White"/>
-                                        <TextBlock Grid.Row="1" Grid.Column="2" Text=" ft" FontSize="11" Foreground="White"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding OriginAirport.LongestRunwayLength}" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Text=" ft" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
 
                             <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="5">
                                 <TextBlock Text="DESTINATION" FontSize="10" Foreground="Gray" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding DestAirport.Ident, FallbackValue='----'}" FontWeight="Bold" Foreground="#e74c3c" FontSize="16"/>
+                                <TextBlock Text="{Binding DestAirport.Ident, FallbackValue='----'}" FontWeight="Bold" Foreground="#00F260" FontSize="16"/>
                                 
-                                <TextBlock Text="{Binding DestAirport.AirportName}" TextWrapping="Wrap" FontSize="11" Foreground="White"/>
-                                <TextBlock Text="{Binding DestAirport.DisplayLocation}" TextWrapping="Wrap" FontSize="11" Foreground="White"/>
+                                <TextBlock Text="{Binding DestAirport.AirportName}" TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                                <TextBlock Text="{Binding DestAirport.DisplayLocation}" TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                 
                                 <Separator Background="#333" Margin="0,5"/>
                                 
                                 <Grid ColumnDefinitions="Auto, *, *" RowDefinitions="Auto, Auto">
                                     <TextBlock Grid.Row="0" Text="Elev:" Foreground="Gray" Margin="0,0,5,0" FontSize="11"/>
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DestAirport.Altitude}" FontSize="11" Foreground="White"/>
-                                    <TextBlock Grid.Row="0" Grid.Column="2" Text=" ft" FontSize="11" Foreground="White"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DestAirport.Altitude}" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text=" ft" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                     <TextBlock Grid.Row="1" Text="Rwy:" Foreground="Gray" Margin="0,0,5,0" FontSize="11"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DestAirport.LongestRunwayLength}" FontSize="11" Foreground="White"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="2" Text=" ft" FontSize="11" Foreground="White"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DestAirport.LongestRunwayLength}" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text=" ft" FontSize="11" Foreground="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                                 </Grid>
                             </StackPanel>
                         </Grid>

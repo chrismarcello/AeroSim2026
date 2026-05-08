@@ -1,0 +1,101 @@
+<rxui:ReactiveUserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:rxui="http://reactiveui.net"
+             xmlns:vm="using:AeroSim2026.ViewModels"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             x:Class="AeroSim2026.Views.AircraftManagerView"
+             x:DataType="vm:AircraftManagerViewModel"
+             x:TypeArguments="vm:AircraftManagerViewModel">
+
+    <Grid RowDefinitions="Auto, *" Margin="20">
+        
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Margin="0,0,0,20">
+            <ic:SymbolIcon Symbol="Airplane" FontSize="28"/>
+            <TextBlock Text="{Binding Title}" FontSize="26" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <TabControl Grid.Row="1">
+            
+            <TabItem Header="My Fleet" FontSize="16" FontWeight="SemiBold">
+                <Grid ColumnDefinitions="*, 300" Margin="0,15,0,0" ColumnSpacing="20">
+                    <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="10">
+                        <ListBox ItemsSource="{Binding Fleet}" SelectedItem="{Binding SelectedSimAircraft}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Spacing="5" Margin="5">
+                                        <TextBlock Text="{Binding Aircraft.DisplayName}" FontWeight="Bold" FontSize="16" Foreground="#4FACFE"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+                    
+                    <Border Grid.Column="1" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="15">
+                        <StackPanel Spacing="15" IsVisible="{Binding SelectedSimAircraft, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <TextBlock Text="Edit SimAircraft" FontWeight="Bold" FontSize="18"/>
+                            <TextBox Text="Something" Watermark="Tail Number"/>
+                            <Button Content="Save Changes" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Classes="accent"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Aircraft Database" FontSize="16" FontWeight="SemiBold">
+                <Grid ColumnDefinitions="*, *, *" Margin="0,15,0,0" ColumnSpacing="15">
+                    
+                    <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="10">
+                        <Grid RowDefinitions="Auto, *, Auto">
+                            <TextBlock Grid.Row="0" Text="Manufacturers" FontWeight="Bold" Margin="5,0,0,10"/>
+                            <ListBox Grid.Row="1" ItemsSource="{Binding Manufacturers}" SelectedItem="{Binding SelectedManufacturer}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding ManufacturerName}" Margin="5"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Button Grid.Row="2" Content="+ Add Manufacturer" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="1" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="10">
+                        <Grid RowDefinitions="Auto, *, Auto">
+                            <TextBlock Grid.Row="0" Text="Types" FontWeight="Bold" Margin="5,0,0,10"/>
+                            <ListBox Grid.Row="1" ItemsSource="{Binding Types}" SelectedItem="{Binding SelectedType}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding AircraftTypeDisplayName}" Margin="5"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Button Grid.Row="2" Content="+ Add Type" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" IsEnabled="{Binding SelectedManufacturer, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="10">
+                        <Grid RowDefinitions="Auto, *, Auto">
+                            <TextBlock Grid.Row="0" Text="Models" FontWeight="Bold" Margin="5,0,0,10"/>
+                            <ListBox Grid.Row="1" ItemsSource="{Binding Models}" SelectedItem="{Binding }">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding AircraftName}" Margin="5"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Button Grid.Row="2" Content="+ Add Model" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" IsEnabled="{Binding SelectedType, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Property Definitions" FontSize="16" FontWeight="SemiBold">
+                 <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="20" Margin="0,15,0,0">
+                     <StackPanel Spacing="15">
+                         <TextBlock Text="Manage Global Aircraft Properties (e.g. Max Takeoff Weight, Fuel Capacity)" Foreground="Gray"/>
+                         <Button Content="+ Create New Property" Classes="accent"/>
+                         </StackPanel>
+                 </Border>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</rxui:ReactiveUserControl>

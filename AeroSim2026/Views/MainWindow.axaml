@@ -154,8 +154,20 @@
                                 <TextBlock Text="Random Flight" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                         <Button Command="{Binding NavigateCommand}" 
+                    <Button Command="{Binding NavigateCommand}" 
                                 CommandParameter="{Binding Pages[4]}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                Background="Transparent"
+                                Margin="0,2"
+                                Padding="15,10">
+                            <StackPanel Orientation="Horizontal" Spacing="15">
+                                <ic:SymbolIcon Symbol="Airplane" FontSize="20"/>
+                                <TextBlock Text="Aircraft Manager" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                         <Button Command="{Binding NavigateCommand}" 
+                                CommandParameter="{Binding Pages[5]}"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Left"
                                 Background="Transparent"

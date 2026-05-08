@@ -38,7 +38,8 @@ namespace AeroSim2026.ViewModels
                 new SavedFlightsViewModel(_logger,_flightServices, _mapFeatureFactory, StatusService, Navigate),
                 new CreateFlightViewModel(_aircraftServices, _airportServices, _navigationServices, _flightServices, StatusService, _flightRouteBuilder, _routingGraph, _mapFeatureFactory, Navigate),
                 new RandomFlightViewModel(_aircraftServices, _airportServices, _navigationServices, _flightServices, StatusService, _flightRouteBuilder, _routingGraph, mapFeatureFactory, Navigate),
-                new SettingsViewModel()
+                new AircraftManagerViewModel(_aircraftServices, StatusService),
+                new SettingsViewModel()                
                 
             };
 

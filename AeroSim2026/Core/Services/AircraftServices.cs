@@ -124,6 +124,51 @@ namespace AeroSim2026.Core.Services
             }
             return simPlane;
         }
-        
+        public async Task<List<AircraftManufacturer>> GetAircraftManufacturerAsync()
+        {
+            try
+            {
+                return await context.AircraftManufacturers
+                    .Where(m => m.AircraftTypes.Any())
+                    .OrderBy(m => m.ManufacturerName)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving aircraft manufacturer");
+                throw;
+            }
+        }
+        public async Task<List<AircraftType>> GetAircraftTypesForManufacturerAsync(string manufacturerId)
+        {
+            try
+            {
+                return await context.AircraftTypes
+                    .Where(t => t.ManufacturerNavigation != null && t.ManufacturerNavigation.ManufacturerId == manufacturerId)
+                    .OrderBy(t => t.AircraftTypeName)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving aircraft types for manufacturer {ManufacturerId}", manufacturerId);
+                throw;
+            }
+        }
+        public async Task<List<AircraftModel>> GetAircraftModelsForTypeAsync(string aircraftTypeId)
+        {
+            try
+            {
+                return await context.AircraftModels
+                    .Where(m => m.AircraftTypeNavigation != null && m.AircraftTypeNavigation.AircraftTypeId == aircraftTypeId)
+                    .OrderBy(m => m.AircraftName)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving aircraft models for type {AircraftTypeId}", aircraftTypeId);
+                throw;
+            }
+        }
+
     }
 }

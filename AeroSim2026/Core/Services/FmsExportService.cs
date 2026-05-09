@@ -53,7 +53,23 @@ namespace AeroSim2026.Core.Services
                 {
                     if (routeItem.Waypoint != null)
                     {
-                        fmsBuilder.AppendLine($"28 {routeItem.Waypoint.Ident} {routeItem.PlannedAltitude:0.000000} {routeItem.Waypoint.Laty} {routeItem.Waypoint.Lonx}");
+                        string airwayName = "DRCT";
+                        if (routeItem.Airway != null && !string.IsNullOrWhiteSpace(routeItem.Airway.AirwayName))
+                        {
+                            airwayName = routeItem.Airway.AirwayName;
+                        }
+
+                        int typeId = 28; // Default to GPS // LatLon
+                        string wpType = routeItem.Waypoint.WaypointType?.ToUpper() ?? "";
+
+                        if (wpType.Contains("VOR"))
+                            typeId = 3;
+                        else if (wpType.Contains("NDB"))
+                            typeId = 2;
+                        else if (wpType.Contains("INTERSECTION") || wpType.Contains("WAYPOINT") || wpType.Contains("FIX"))
+                            typeId = 11;
+
+                        fmsBuilder.AppendLine($"{typeId} {routeItem.Waypoint.Ident} {airwayName} {routeItem.PlannedAltitude:0.000000} {routeItem.Waypoint.Laty} {routeItem.Waypoint.Lonx}");
                     }
                 }
 

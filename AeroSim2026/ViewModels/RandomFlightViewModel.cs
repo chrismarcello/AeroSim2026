@@ -257,6 +257,7 @@ namespace AeroSim2026.ViewModels
 
         private async Task GenerateNewFlightAsync()
         {
+            SavedFlightPlan = null;
             FlightPaths.Clear();
             SelectedFlightPath = null;
 
@@ -409,6 +410,7 @@ namespace AeroSim2026.ViewModels
             _statusService.IsBusy = true;
             _statusService.StatusMessage = "Saving Flight Plan...";
 
+
             try
             {
                 var origin = itemToSave.OriginalFlight.OriginAirport;
@@ -425,7 +427,7 @@ namespace AeroSim2026.ViewModels
                     CruiseAltitude = CruiseAltitude > 0 ? CruiseAltitude : 5000,
                     DistanceNm = (int)Math.Round(itemToSave.DistanceNm),
                     EstFlightTime = itemToSave.EstFlightTimeSpan, // Pull from the updated property
-                    Comments = SelectedFlightPath != null ? $"Route: {SelectedFlightPath.RouteString}" : "Direct",
+                    Comments = String.Empty,
                     FlightPlanRoutes = new List<FlightPlanRoute>()
                 };
 
@@ -487,6 +489,7 @@ namespace AeroSim2026.ViewModels
         public void ClearForm()
         {
             // Reset Form Inputs
+            SavedFlightPlan = null;
             SelectedAircraft = null;
             SelectedDepartAirportType = null;
             SelectedArrivalAirportType = null;

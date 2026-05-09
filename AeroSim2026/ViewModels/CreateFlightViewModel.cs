@@ -180,6 +180,7 @@ namespace AeroSim2026.ViewModels
 
             BuildFlightPathCommand = ReactiveCommand.CreateFromTask(async () =>
             {
+                SavedFlightPlan = null;
                 RouteOptions.Clear();
 
                 if (OriginAirport == null || DestAirport == null) return;

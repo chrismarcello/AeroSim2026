@@ -105,7 +105,7 @@ namespace AeroSim2026.ViewModels
         public ICommand BeginEditCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
-        public override string Title => $" Flight Plan: {Flight.StartAirport.DisplayName} - {Flight.EndAirport.DisplayName}";
+        public override string Title => $" Flight Plan: {Flight.StartAirport.DisplayName} -> {Flight.EndAirport.DisplayName}";
         
         public FlightDetailViewModel(IFlightServices flightServices, IMapFeatureFactory mapFeatureFactory, IStatusService statusService, FlightPlan flight, Action<PageViewModelBase> navigate, PageViewModelBase previousPage) 
         { 

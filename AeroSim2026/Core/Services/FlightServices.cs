@@ -243,17 +243,54 @@ namespace AeroSim2026.Core.Services
         }
         public async Task<FlightPlan> SaveFlightPlanAsync(FlightPlan flightPlan)
         {
+            var waypointCache = new Dictionary<FlightPlanRoute, Waypoint?>();
+
+            // 1. ONLY hide the Waypoints to prevent the Identity Tracking conflicts
+            if (flightPlan.FlightPlanRoutes != null)
+            {
+                foreach (var route in flightPlan.FlightPlanRoutes)
+                {
+                    waypointCache[route] = route.Waypoint;
+                    route.Waypoint = null;
+                }
+            }
+
+            // We no longer hide Aircraft or Airports! Leave them completely intact.
+
             try
             {
+                // 2. Add the flight plan graph
                 context.FlightPlans.Add(flightPlan);
+
+                // 3. Explicitly tell EF Core that the Aircraft and Airports already exist in the database.
+                // This prevents EF Core from trying to INSERT duplicates of them!
+                if (flightPlan.StartAirport != null) context.Entry(flightPlan.StartAirport).State = EntityState.Unchanged;
+                if (flightPlan.EndAirport != null) context.Entry(flightPlan.EndAirport).State = EntityState.Unchanged;
+                if (flightPlan.AircraftModel != null) context.Entry(flightPlan.AircraftModel).State = EntityState.Unchanged;
+
                 await context.SaveChangesAsync();
-                return flightPlan;
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error adding flight plan");
                 throw;
             }
+            finally
+            {
+                // 4. Restore ONLY the Waypoints
+                if (flightPlan.FlightPlanRoutes != null)
+                {
+                    foreach (var route in flightPlan.FlightPlanRoutes)
+                    {
+                        if (waypointCache.TryGetValue(route, out var cachedWaypoint))
+                        {
+                            route.Waypoint = cachedWaypoint;
+                        }
+                    }
+                }
+            }
+
+            return flightPlan;
         }
         public async Task<FlightPlan> UpdateFlightPlanAsync(FlightPlan flightPlan)
         {

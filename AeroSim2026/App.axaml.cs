@@ -89,18 +89,18 @@ namespace AeroSim2026
             base.OnFrameworkInitializationCompleted();
         }
 
-        private void DisableAvaloniaDataAnnotationValidation()
-        {
-            // Get an array of plugins to remove
-            var dataValidationPluginsToRemove =
-                BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
+        //private void DisableAvaloniaDataAnnotationValidation()
+        //{
+        //    // Get an array of plugins to remove
+        //    var dataValidationPluginsToRemove =
+        //        BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
-            // remove each entry found
-            foreach (var plugin in dataValidationPluginsToRemove)
-            {
-                BindingPlugins.DataValidators.Remove(plugin);
-            }
-        }
+        //    // remove each entry found
+        //    foreach (var plugin in dataValidationPluginsToRemove)
+        //    {
+        //        BindingPlugins.DataValidators.Remove(plugin);
+        //    }
+        //}
 
         // Helper method to apply theme based on user settings
         private void ApplyTheme(string theme)

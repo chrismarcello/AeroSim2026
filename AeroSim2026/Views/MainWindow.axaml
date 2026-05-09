@@ -8,9 +8,7 @@
         x:Class="AeroSim2026.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         x:CompileBindings="True"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
-        ExtendClientAreaTitleBarHeightHint="60"
+        WindowDecorations="BorderOnly"
         TransparencyLevelHint="Mica"
         Background="{DynamicResource SystemRegionBrush}"
         Icon="/Assets/AeroSim.ico">

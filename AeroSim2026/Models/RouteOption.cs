@@ -32,6 +32,7 @@ namespace AeroSim2026.Models
         public int SequenceNumber { get; set; }
         public RouteNode Waypoint { get; set; } = null!;
         public string AirwayName { get; set; }
+        public int? AirwayId { get; set; }
         public double DistanceFromPrevious { get; set; }
         public double CumulativeDistance { get; set; }
     }

@@ -313,13 +313,13 @@ namespace AeroSim2026.Core.Services
         {
             try
             {
-                return await context.FlightPlans
+                return await context.FlightPlans                    
                     .Include(fp => fp.FlightPlanRoutes)
-                        .ThenInclude(fpr => fpr.Airway)
-                        .AsNoTracking()
-                    .Include(fp => fp.FlightPlanRoutes)     // Add this line
-                        .ThenInclude(fpr => fpr.Waypoint)   // Add this line
-                        .AsNoTracking()
+                        .ThenInclude(fpr => fpr.Airway)                        
+                    .Include(fp => fp.FlightPlanRoutes)
+                        .ThenInclude(fpr => fpr.Waypoint)
+                    .AsNoTracking()
+                    .AsSplitQuery()
                     .FirstOrDefaultAsync(fp => fp.FlightPlanId == flightPlanId)
                     ;
             }

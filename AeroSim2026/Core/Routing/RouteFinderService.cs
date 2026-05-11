@@ -148,6 +148,7 @@ namespace AeroSim2026.Core.Routing
                     SequenceNumber = seq++,
                     Waypoint = edge.TargetNode,
                     AirwayName = edge.AirwayName,
+                    AirwayId = edge.AirwayId,
                     DistanceFromPrevious = edge.Distance,
                     CumulativeDistance = cumulative
                 });

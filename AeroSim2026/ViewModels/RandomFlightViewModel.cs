@@ -356,7 +356,8 @@ namespace AeroSim2026.ViewModels
                             fpRoutesToSave.Add(new FlightPlanRoute
                             {
                                 SequenceNumber = leg.SequenceNumber,
-                                WaypointId = leg.Waypoint.WaypointId
+                                WaypointId = leg.Waypoint.WaypointId,
+                                AirwayId = leg.AirwayId
                             });
                         }
 

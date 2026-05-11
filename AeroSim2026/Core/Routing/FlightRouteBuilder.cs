@@ -75,6 +75,7 @@ namespace AeroSim2026.Core.Routing
             // 4. Add the Enroute legs, passing the NavType!
             foreach (var edge in pathEdges)
             {
+                System.Diagnostics.Debug.WriteLine($"Waypoint: {edge.TargetNode.Identifier}, AirwayId: {edge.AirwayId}");
                 routeList.Add(new FlightPlanRoute
                 {
                     SequenceNumber = sequence++,

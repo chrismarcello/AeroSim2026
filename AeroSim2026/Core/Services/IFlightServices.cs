@@ -16,7 +16,9 @@ namespace AeroSim2026.Core.Services
         Task<FlightPlan> SaveFlightPlanAsync(FlightPlan flightPlan);
         Task<FlightPlan> UpdateFlightPlanAsync(FlightPlan flightPlan);
         Task<FlightPlan?> GetFlightPlanWithRoutesAsync(string flightPlanId);
-        Task<GeneratedFlight> BuildRandomFlightAsync(RandomFlightParams flightParams); 
-        
+        Task<GeneratedFlight> BuildRandomFlightAsync(RandomFlightParams flightParams);
+        Task DeleteFlightPlanAsync(string flightPlanId);
+
+
     }
 }

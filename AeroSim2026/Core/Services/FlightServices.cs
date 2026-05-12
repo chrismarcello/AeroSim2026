@@ -23,7 +23,7 @@ namespace AeroSim2026.Core.Services
         private readonly RoutingGraph _routingGraph;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        
+
 
         private const string CruiseSpeedPropertyId = "b7257438-0d1e-11f1-8f56-00155dcf273e";
         private const string RangePropertyId = "c38c6aa7-fe53-11f0-ae5d-0a0027000002";
@@ -41,7 +41,7 @@ namespace AeroSim2026.Core.Services
             _scopeFactory = scopeFactory;
         }
 
-       public async Task BuildCorridorGraphAsync(Airport origin, Airport destination)
+        public async Task BuildCorridorGraphAsync(Airport origin, Airport destination)
         {
             double padding = 5.0; // Add 5 degree padding around the direct line
             double minLat = Math.Min(origin.Laty, destination.Laty) - padding;
@@ -58,6 +58,7 @@ namespace AeroSim2026.Core.Services
                 .Where(a => a.FromLaty >= minLat && a.FromLaty <= maxLat &&
                     a.FromLonx >= minLon && a.FromLonx <= maxLon)
                 .AsNoTracking()
+                .AsSplitQuery()
                 .ToListAsync();
 
             var waypointIds = airways.Select(a => a.FromWaypointId)
@@ -69,6 +70,7 @@ namespace AeroSim2026.Core.Services
             .Where(n => n.WaypointId != null && waypointIds.Contains(n.WaypointId.Value))
              .Select(n => new { n.WaypointId, n.VorId, n.NdbId })
              .AsNoTracking()
+             .AsSplitQuery()
              .ToListAsync();
 
             var navTypeLookup = new Dictionary<int, string>();
@@ -119,8 +121,8 @@ namespace AeroSim2026.Core.Services
                     .Include(fp => fp.EndAirport)
                         .ThenInclude(a => a.AirportsLocation)
                             .ThenInclude(al => al.GeoAdmin3)
-
                     .Include(fp => fp.AircraftModel)
+                    .AsSplitQuery()
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -173,6 +175,7 @@ namespace AeroSim2026.Core.Services
                         .ThenInclude(a => a.Runways)
                             .ThenInclude(r => r.PrimaryEnd)
                     .Include(fp => fp.AircraftModel)
+                    .AsSplitQuery()
                     .ToListAsync();
 
             }
@@ -232,6 +235,7 @@ namespace AeroSim2026.Core.Services
                         .ThenInclude(a => a.Runways)
                             .ThenInclude(r => r.SecondaryEnd)
                     .Include(fp => fp.AircraftModel)
+                    .AsSplitQuery()
                     .ToListAsync();
 
             }
@@ -321,11 +325,12 @@ namespace AeroSim2026.Core.Services
         {
             try
             {
-                return await context.FlightPlans                    
+                return await context.FlightPlans
                     .Include(fp => fp.FlightPlanRoutes)
-                        .ThenInclude(fpr => fpr.Airway)                        
+                        .ThenInclude(fpr => fpr.Airway)
                     .Include(fp => fp.FlightPlanRoutes)
                         .ThenInclude(fpr => fpr.Waypoint)
+                        .AsSplitQuery()
                     .AsNoTracking()
                     .FirstOrDefaultAsync(fp => fp.FlightPlanId == flightPlanId)
                     ;
@@ -344,23 +349,23 @@ namespace AeroSim2026.Core.Services
             Int32 MinTakeoff = 1000;
             Int32 MinLanding = 1000;
             double TotalDistance = 0.00;
-            
-            Coordinates departCoords;          
-          
+
+            Coordinates departCoords;
+
 
             var aircraft = await aircraftServices.GetSimAircraftWithPropertiesAsync(flightParams.SimAircraftId);
             var cruiseSpeed = aircraft.Properties.FirstOrDefault(p => p.PropertyId == CruiseSpeedPropertyId);
-                if (cruiseSpeed != null && int.TryParse(cruiseSpeed.PropertyValue?.ToString(), out int speed))                
-                    PlannedSpeed = speed;
+            if (cruiseSpeed != null && int.TryParse(cruiseSpeed.PropertyValue?.ToString(), out int speed))
+                PlannedSpeed = speed;
             var range = aircraft.Properties.FirstOrDefault(p => p.PropertyId == RangePropertyId);
-                if (range != null && int.TryParse(range.PropertyValue?.ToString(), out int rangeValue))                
-                    MaxRange = (Int32)rangeValue - (rangeValue * 32 / 100);
-                var minTakeoff = aircraft.Properties.FirstOrDefault(p => p.PropertyId == MinTakeoffPropertyId);
-                    if (minTakeoff != null && int.TryParse(minTakeoff.PropertyValue?.ToString(), out int minTakeoffValue))                    
-                        MinTakeoff = minTakeoffValue;
-                    var minLanding = aircraft.Properties.FirstOrDefault(p => p.PropertyId == MinLandingPropertyId);
-                        if (minLanding != null && int.TryParse(minLanding.PropertyValue?.ToString(), out int minLandingValue))                        
-                            MinLanding = minLandingValue;
+            if (range != null && int.TryParse(range.PropertyValue?.ToString(), out int rangeValue))
+                MaxRange = (Int32)rangeValue - (rangeValue * 32 / 100);
+            var minTakeoff = aircraft.Properties.FirstOrDefault(p => p.PropertyId == MinTakeoffPropertyId);
+            if (minTakeoff != null && int.TryParse(minTakeoff.PropertyValue?.ToString(), out int minTakeoffValue))
+                MinTakeoff = minTakeoffValue;
+            var minLanding = aircraft.Properties.FirstOrDefault(p => p.PropertyId == MinLandingPropertyId);
+            if (minLanding != null && int.TryParse(minLanding.PropertyValue?.ToString(), out int minLandingValue))
+                MinLanding = minLandingValue;
             flightParams.MaxRange = MaxRange;
             flightParams.CruiseSpeed = PlannedSpeed;
             flightParams.MinRotateRunwayLength = (int)(MinTakeoff * 1.2);
@@ -375,7 +380,7 @@ namespace AeroSim2026.Core.Services
 
             departCoords = new Coordinates(originAirport.Laty, originAirport.Lonx);
             flightParams.Coordinates = departCoords;
-            
+
 
 
             var arrivalAirport = await airportServices.RandomArrivalAirportAsync(flightParams);
@@ -395,6 +400,28 @@ namespace AeroSim2026.Core.Services
 
             return generatedFlight;
         }
-        
+        public async Task DeleteFlightPlanAsync(string flightPlanId)
+        {
+            try
+            {
+                var flightPlan = await context.FlightPlans.FindAsync(flightPlanId);
+                if (flightPlan != null)
+                {
+                   await context.FlightPlanRoutes
+                        .Where(r => r.FlightPlanId == flightPlanId)
+                        .ExecuteDeleteAsync();
+
+                    await context.FlightPlans
+                        .Where(fp => fp.FlightPlanId == flightPlanId)
+                        .ExecuteDeleteAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error deleting flight plan for {flightPlanId}", flightPlanId);
+                throw;
+            }
+
+        }
     }
 }

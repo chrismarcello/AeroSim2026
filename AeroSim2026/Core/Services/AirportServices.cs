@@ -41,7 +41,7 @@ namespace AeroSim2026.Core.Services
                     // Branch 4: Admin 2 (County/Region)
                     .Include(a => a.AirportsLocation)
                         .ThenInclude(al => al.GeoAdmin2)
-
+                    .AsSplitQuery()
                     .ToListAsync();
             }
             catch (Exception ex)
@@ -75,6 +75,7 @@ namespace AeroSim2026.Core.Services
                         .ThenInclude(r => r.PrimaryEnd)
                      .Include(a => a.Runways)
                         .ThenInclude(r => r.SecondaryEnd)
+                        .AsSplitQuery()
                     .FirstOrDefaultAsync(a => a.AirportId == airportId) ?? null;
 #pragma warning restore CS8603 // Possible null reference return.
             }
@@ -176,6 +177,7 @@ namespace AeroSim2026.Core.Services
                             .Include(a => a.Runways)
                                 .ThenInclude(r => r.SecondaryEnd)
                             .OrderBy(a => EF.Functions.Random())
+                            .AsSplitQuery()
                                 .FirstOrDefaultAsync();
                         }
                         else
@@ -199,6 +201,7 @@ namespace AeroSim2026.Core.Services
                             .Include(a => a.Runways)
                                 .ThenInclude(r => r.SecondaryEnd)
                             .OrderBy(a => EF.Functions.Random())
+                            .AsSplitQuery()
                                 .FirstOrDefaultAsync();
                         }
                     }
@@ -226,6 +229,7 @@ namespace AeroSim2026.Core.Services
                                 .ThenInclude(r => r.SecondaryEnd)
 
                             .OrderBy(a => EF.Functions.Random())
+                            .AsSplitQuery()
                                 .FirstOrDefaultAsync();
                         }
                         else
@@ -249,6 +253,7 @@ namespace AeroSim2026.Core.Services
                             .Include(a => a.Runways)
                                 .ThenInclude(r => r.SecondaryEnd)
                             .OrderBy(a => EF.Functions.Random())
+                            .AsSplitQuery()
                                 .FirstOrDefaultAsync();
                         }
                     }

@@ -142,26 +142,39 @@
                             <TextBlock Text="DATE CREATED" Classes="DataHeader"/>
                             <TextBlock Text="{Binding Flight.DateCreated, StringFormat='{}{0:MM/dd/yyyy}'}" Classes="DataValue"/>
                         </StackPanel>
-                        <StackPanel Classes="DataCell">
-                            <Button Command="{Binding BeginEditCommand}" IsVisible="{Binding !IsEditing}" Background="Transparent" FontWeight="Bold">
-								<StackPanel Orientation="Horizontal" Spacing="10">
-                                    <ic:SymbolIcon Symbol="Edit" FontSize="20"/>
-                                    <TextBlock Text="Edit" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Command="{Binding SaveCommand}" IsVisible="{Binding IsEditing}" Background="Transparent" FontWeight="Bold">
-								<StackPanel Orientation="Horizontal" Spacing="10">
-                                    <ic:SymbolIcon Symbol="Save" FontSize="20"/>
-                                    <TextBlock Text="Save" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Command="{Binding CancelCommand}" IsVisible="{Binding IsEditing}" Background="Transparent" FontWeight="Bold">
-								<StackPanel Orientation="Horizontal" Spacing="10">
-                                    <ic:FluentIcon Icon="DismissCircle" FontSize="20" />
-                                    <TextBlock Text="Cancel" VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
+                        <StackPanel Classes="DataCell" VerticalAlignment="Center">
+    <StackPanel Orientation="Horizontal" Spacing="5">
+        
+        <Button Command="{Binding BeginEditCommand}" IsVisible="{Binding !IsEditing}" Background="Transparent" Padding="5">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <ic:SymbolIcon Symbol="Edit" FontSize="16"/>
+                <TextBlock Text="Edit" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        
+        <Button Command="{Binding SaveCommand}" IsVisible="{Binding IsEditing}" Background="Transparent" Padding="5">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <ic:SymbolIcon Symbol="Save" FontSize="16"/>
+                <TextBlock Text="Save" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        
+        <Button Command="{Binding CancelCommand}" IsVisible="{Binding IsEditing}" Background="Transparent" Padding="5">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <ic:FluentIcon Icon="DismissCircle" FontSize="16" />
+                <TextBlock Text="Cancel" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        
+        <Button Command="{Binding DeleteFlightCommand}" Background="Transparent" Padding="5">
+            <StackPanel Orientation="Horizontal" Spacing="5">
+                <ic:FluentIcon Icon="Delete" FontSize="16" Foreground="#FF0000"/>
+                <TextBlock Text="Delete" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+            </StackPanel>
+        </Button>
+        
+    </StackPanel>
+</StackPanel>
                     </StackPanel>
                 </StackPanel>
                 <TabControl Margin="0,10,0,0" Padding="0,10,0,0">

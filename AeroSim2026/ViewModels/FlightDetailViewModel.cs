@@ -105,6 +105,7 @@ namespace AeroSim2026.ViewModels
         public ICommand BeginEditCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
+        public ICommand DeleteFlightCommand { get; }
         public override string Title => $" Flight Plan: {Flight.StartAirport.DisplayName} -> {Flight.EndAirport.DisplayName}";
         
         public FlightDetailViewModel(IFlightServices flightServices, IMapFeatureFactory mapFeatureFactory, IStatusService statusService, FlightPlan flight, Action<PageViewModelBase> navigate, PageViewModelBase previousPage) 
@@ -120,6 +121,8 @@ namespace AeroSim2026.ViewModels
             BeginEditCommand = ReactiveCommand.Create(BeginEdit);
             SaveCommand = ReactiveCommand.CreateFromTask(SaveAsync);
             CancelCommand = ReactiveCommand.Create(Cancel);
+
+            DeleteFlightCommand = ReactiveCommand.CreateFromTask(DeleteFlight);
 
             ExportFmsCommand = ReactiveCommand.Create(ExportFms);
 
@@ -155,6 +158,20 @@ namespace AeroSim2026.ViewModels
             this.RaisePropertyChanged(nameof(CrashedDisplayText));
 
             IsEditing = false;
+        }
+
+        private async Task DeleteFlight()
+        {
+            try
+            {
+                var id = Flight.FlightPlanId;
+                await _flightServices.DeleteFlightPlanAsync(id);
+                GoBack();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Database delete failed: {ex.Message}");
+            }
         }
 
         private async Task SaveAsync()

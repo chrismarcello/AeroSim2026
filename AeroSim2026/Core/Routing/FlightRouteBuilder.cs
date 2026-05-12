@@ -75,12 +75,17 @@ namespace AeroSim2026.Core.Routing
             // 4. Add the Enroute legs, passing the NavType!
             foreach (var edge in pathEdges)
             {
-                System.Diagnostics.Debug.WriteLine($"Waypoint: {edge.TargetNode.Identifier}, AirwayId: {edge.AirwayId}");
                 routeList.Add(new FlightPlanRoute
                 {
                     SequenceNumber = sequence++,
                     WaypointId = edge.TargetNode.WaypointId,
                     AirwayId = edge.AirwayId,
+                    Airway = edge.AirwayId.HasValue ? new Airway
+                    {
+                        AirwayId = edge.AirwayId.Value,
+                        MinimumAltitude = edge.MinimumAltitude,
+                        MaximumAltitude = edge.MaximumAltitude
+                    } : null,
                     Waypoint = new Waypoint
                     {
                         Ident = edge.TargetNode.Identifier,
@@ -160,6 +165,19 @@ namespace AeroSim2026.Core.Routing
                 double maxDescAlt = destAlt + (distToDest * descentGradient);
 
                 double calculatedAlt = Math.Min(cruiseAltitude, Math.Min(maxClimbAlt, maxDescAlt));
+
+                if (routeList[i].Airway != null)
+                {
+                    if (routeList[i].Airway.MinimumAltitude.HasValue)
+                    {
+                        calculatedAlt = Math.Max(calculatedAlt, routeList[i].Airway.MinimumAltitude!.Value);
+                    }
+
+                    if (routeList[i].Airway.MaximumAltitude.HasValue)
+                    {
+                        calculatedAlt = Math.Min(calculatedAlt, routeList[i].Airway.MaximumAltitude!.Value);
+                    }
+                }
 
                 routeList[i].PlannedAltitude = Math.Round(calculatedAlt / 100.0) * 100.0; // Round to nearest 100 ft
             }

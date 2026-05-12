@@ -244,6 +244,7 @@ namespace AeroSim2026.Core.Services
         public async Task<FlightPlan> SaveFlightPlanAsync(FlightPlan flightPlan)
         {
             var waypointCache = new Dictionary<FlightPlanRoute, Waypoint?>();
+            var airwayCache = new Dictionary<FlightPlanRoute, Airway?>();
 
             // 1. ONLY hide the Waypoints to prevent the Identity Tracking conflicts
             if (flightPlan.FlightPlanRoutes != null)
@@ -252,6 +253,9 @@ namespace AeroSim2026.Core.Services
                 {
                     waypointCache[route] = route.Waypoint;
                     route.Waypoint = null;
+
+                    airwayCache[route] = route.Airway;
+                    route.Airway = null;
                 }
             }
 
@@ -286,6 +290,10 @@ namespace AeroSim2026.Core.Services
                         {
                             route.Waypoint = cachedWaypoint;
                         }
+                        if (airwayCache.TryGetValue(route, out var cachedAirway))
+                        {
+                            route.Airway = cachedAirway;
+                        }
                     }
                 }
             }
@@ -319,7 +327,6 @@ namespace AeroSim2026.Core.Services
                     .Include(fp => fp.FlightPlanRoutes)
                         .ThenInclude(fpr => fpr.Waypoint)
                     .AsNoTracking()
-                    .AsSplitQuery()
                     .FirstOrDefaultAsync(fp => fp.FlightPlanId == flightPlanId)
                     ;
             }

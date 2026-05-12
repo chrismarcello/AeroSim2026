@@ -74,6 +74,14 @@ namespace AeroSim2026.Core.Routing
                     if (closedSet.Contains(neighbor.WaypointId))
                         continue;
 
+                    // if we are within 80NM of the destingation, reject high altitude airways that would be inefficient for short hops
+                    double distToDest = GeoMath.Distance(neighbor.Latitude, neighbor.Longitude, endNode.Latitude, endNode.Longitude);
+
+                    if (distToDest < 80.0 && edge.MinimumAltitude.HasValue && edge.MinimumAltitude.Value > 10000)
+                    {
+                        continue;
+                    }
+
                     // RESTORED: Vital for realistic airway routing
                     if (edge.MinimumAltitude.HasValue && cruiseAltitude < edge.MinimumAltitude.Value)
                     {
@@ -83,7 +91,7 @@ namespace AeroSim2026.Core.Routing
                     {
                         continue;
                     }
-
+                    
                     double edgeCost = edge.AirwayId == null ? edge.Distance * directMultiplier : edge.Distance;
 
                     double tentativeG = gScore[current.WaypointId] + edgeCost;

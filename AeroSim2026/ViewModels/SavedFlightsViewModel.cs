@@ -1,9 +1,7 @@
 ﻿using AeroSim2026.Core.Services;
 using AeroSim2026.EFModels;
-using Avalonia.Animation;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
-using ReactiveUI.Avalonia;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -27,6 +25,8 @@ namespace AeroSim2026.ViewModels
         public override string Title => "Saved Flights";
         public ObservableCollection<FlightPlan> FlownFlights { get; } = new();
         public ObservableCollection<FlightPlan> UnflownFlights { get; } = new();
+
+
         public ViewModelActivator Activator { get; } = new ViewModelActivator();
         public SavedFlightsViewModel(ILogger<SavedFlightsViewModel> logger, IFlightServices flightServices, IMapFeatureFactory mapFeatureFactory, IStatusService statusService, Action<PageViewModelBase> navigationAction)
         {
@@ -36,6 +36,7 @@ namespace AeroSim2026.ViewModels
             _navigateAction = navigationAction;
             _statusService = statusService;
 
+            
             this.WhenActivated((CompositeDisposable disposables) =>
             {
                 // Clear selections upon activation
@@ -104,7 +105,19 @@ namespace AeroSim2026.ViewModels
         }
         private void NavigateToDetails(FlightPlan flight)
         {
-            var detailView = new FlightDetailViewModel(_flightServices, _mapFeatureFactory, _statusService, flight, _navigateAction, this);
+            Action<PageViewModelBase> returnNavAction = (page) =>
+            {
+                if (page == this)
+                {
+                    _=LoadData();
+
+                    SelectedFlownFlight = null;
+                    SelectedUnflownFlight = null;
+
+                    _navigateAction(page);
+                }
+            };
+            var detailView = new FlightDetailViewModel(_flightServices, _mapFeatureFactory, _statusService, flight, returnNavAction, this);
             _navigateAction(detailView);
         }
     }

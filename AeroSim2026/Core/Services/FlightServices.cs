@@ -175,6 +175,7 @@ namespace AeroSim2026.Core.Services
                         .ThenInclude(a => a.Runways)
                             .ThenInclude(r => r.PrimaryEnd)
                     .Include(fp => fp.AircraftModel)
+                    .OrderBy(fp => fp.DateCreated)
                     .AsSplitQuery()
                     .ToListAsync();
 
@@ -235,6 +236,7 @@ namespace AeroSim2026.Core.Services
                         .ThenInclude(a => a.Runways)
                             .ThenInclude(r => r.SecondaryEnd)
                     .Include(fp => fp.AircraftModel)
+                    .OrderBy(fp => fp.DateCreated)
                     .AsSplitQuery()
                     .ToListAsync();
 

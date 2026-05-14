@@ -31,7 +31,7 @@ namespace AeroSim2026.ViewModels
             _flightRouteBuilder = flightRouteBuilder;
             _routingGraph = routingGraph;
             _mapFeatureFactory = mapFeatureFactory;
-#pragma warning disable CS8604 // Possible null reference argument.
+
             Pages = new ObservableCollection<PageViewModelBase>
             {
                 new DashboardViewModel(),
@@ -44,9 +44,9 @@ namespace AeroSim2026.ViewModels
             };
 
 
-#pragma warning disable CS8601 // Possible null reference assignment.
-            _CurrentPage = Pages.FirstOrDefault();
-#pragma warning restore CS8601 // Possible null reference assignment.
+
+            _CurrentPage = Pages[0];
+
 
             NavigateCommand = ReactiveCommand.Create<PageViewModelBase>(Navigate);
             InitializeApplicationData();

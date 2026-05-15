@@ -219,7 +219,7 @@ namespace AeroSim2026.ViewModels
                                     if (origin != null && node.Identifier?.Trim() == origin.Ident?.Trim()) continue;
                                     if (dest != null && node.Identifier?.Trim() == dest.Ident?.Trim()) continue;
 
-                                    markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier!, node.NavType));
+                                    markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier!, node.NavType!));
                                 }
                             }
                         }
@@ -348,9 +348,9 @@ namespace AeroSim2026.ViewModels
 
                             if (leg.SequenceNumber > 1 && leg.SequenceNumber < proposed.Legs.Count)
                             {
-                                routeNames.Add(leg.Waypoint.Identifier);
+                                routeNames.Add(leg.Waypoint.Identifier!);
                                 string airwayStr = string.IsNullOrEmpty(leg.AirwayName) ? "DCT" : $"via {leg.AirwayName}";
-                                details.Add($"  {leg.SequenceNumber - 1:D2}. {leg.Waypoint.Identifier.PadRight(5)} {airwayStr}");
+                                details.Add($"  {leg.SequenceNumber - 1:D2}. {leg.Waypoint.Identifier!.PadRight(5)} {airwayStr}");
                             }
 
                             fpRoutesToSave.Add(new FlightPlanRoute
@@ -421,7 +421,7 @@ namespace AeroSim2026.ViewModels
                 var newPlan = new FlightPlan
                 {
                     FlightPlanId = Guid.NewGuid().ToString(),
-                    DateCreated = DateTime.UtcNow,
+                    DateCreated = DateTime.Now,
                     AircraftModelId = SelectedAircraft.AircraftId.ToString(),
                     StartAirportId = origin.AirportId,
                     EndAirportId = dest.AirportId,

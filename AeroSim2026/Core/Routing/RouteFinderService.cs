@@ -71,7 +71,7 @@ namespace AeroSim2026.Core.Routing
                 foreach (var edge in current.OutgoingEdges)
                 {
                     var neighbor = edge.TargetNode;
-                    if (closedSet.Contains(neighbor.WaypointId))
+                    if (closedSet.Contains(neighbor!.WaypointId))
                         continue;
 
                     // if we are within 80NM of the destingation, reject high altitude airways that would be inefficient for short hops
@@ -154,8 +154,8 @@ namespace AeroSim2026.Core.Routing
                 route.Legs.Add(new RouteLeg
                 {
                     SequenceNumber = seq++,
-                    Waypoint = edge.TargetNode,
-                    AirwayName = edge.AirwayName,
+                    Waypoint = edge.TargetNode!,
+                    AirwayName = edge.AirwayName!,
                     AirwayId = edge.AirwayId,
                     DistanceFromPrevious = edge.Distance,
                     CumulativeDistance = cumulative
@@ -172,7 +172,7 @@ namespace AeroSim2026.Core.Routing
 
             for (int i = 0; i < route1.Count; i++)
             {
-                if (route1[i].TargetNode.WaypointId != route2[i].TargetNode.WaypointId)
+                if (route1[i].TargetNode!.WaypointId != route2[i].TargetNode!.WaypointId)
                     return false;
             }
             return true;

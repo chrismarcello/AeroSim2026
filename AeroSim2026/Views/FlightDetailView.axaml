@@ -117,7 +117,7 @@
                         <StackPanel Classes="DataCell">
                             <TextBlock Text="DATE FLOWN" Classes="DataHeader"/>
                             <TextBlock Text="{Binding EditDateFlown, StringFormat='{}{0:MM/dd/yyyy}'}" Classes="DataValue" IsVisible="{Binding !IsEditing}"/>
-                                <CalendarDatePicker SelectedDate="{Binding EditDateFlown}" IsVisible="{Binding IsEditing}" Watermark="Select Date"/>
+                                <CalendarDatePicker SelectedDate="{Binding EditDateFlown}" IsVisible="{Binding IsEditing}" PlaceholderText="Select Date"/>
                         </StackPanel>
                     </StackPanel>
 

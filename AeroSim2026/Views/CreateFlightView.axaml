@@ -28,7 +28,7 @@
                 <Border Grid.Row="0" Padding="4" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
                     <Grid ColumnDefinitions="Auto, *, Auto">
                         <TextBlock Grid.Column="0" Text="Airports" VerticalAlignment="Center" FontWeight="SemiBold" Margin="4,0"/>
-                        <TextBox Grid.Column="1" Watermark="Search..." Margin="4,0" Height="24" Padding="4,2" FontSize="12" Text="{Binding SearchText}"/>
+                        <TextBox Grid.Column="1" PlaceholderText="Search..." Margin="4,0" Height="24" Padding="4,2" FontSize="12" Text="{Binding SearchText}"/>
                     </Grid>
                 </Border>
                 

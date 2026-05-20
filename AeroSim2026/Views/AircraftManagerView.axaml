@@ -17,27 +17,67 @@
         <TabControl Grid.Row="1">
             
             <TabItem Header="My Fleet" FontSize="16" FontWeight="SemiBold">
-                <Grid ColumnDefinitions="*, 300" Margin="0,15,0,0" ColumnSpacing="20">
-                    <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="10">
-                        <ListBox ItemsSource="{Binding Fleet}" SelectedItem="{Binding SelectedSimAircraft}">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Spacing="5" Margin="5">
-                                        <TextBlock Text="{Binding Aircraft.DisplayName}" FontWeight="Bold" FontSize="16" Foreground="#4FACFE"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </Border>
-                    
-                    <Border Grid.Column="1" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="15">
-                        <StackPanel Spacing="15" IsVisible="{Binding SelectedSimAircraft, Converter={x:Static ObjectConverters.IsNotNull}}">
-                            <TextBlock Text="Edit SimAircraft" FontWeight="Bold" FontSize="18"/>
-                            <TextBox Text="Something" Watermark="Tail Number"/>
-                            <Button Content="Save Changes" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Classes="accent"/>
-                        </StackPanel>
-                    </Border>
+                <Grid ColumnDefinitions="350, *" Margin="0,15,0,0" ColumnSpacing="20">
+    <Border Grid.Column="0" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="10">
+        <ListBox ItemsSource="{Binding Fleet}" SelectedItem="{Binding SelectedSimAircraft}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Spacing="5" Margin="5">
+                        <TextBlock Text="{Binding Aircraft.DisplayName}" FontWeight="Bold" FontSize="16" Foreground="#4FACFE"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Border>
+
+    <Border Grid.Column="1" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="15">
+        <ScrollViewer>
+            <StackPanel Spacing="15" IsVisible="{Binding SelectedSimAircraft, Converter={x:Static ObjectConverters.IsNotNull}}">
+                
+                <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,5">
+                    <TextBlock Grid.Column="0" Text="Aircraft Details" FontWeight="Bold" FontSize="18" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Content="Remove from Fleet" 
+                            Command="{Binding DeleteAircraftCommand}" 
+                            Foreground="#FF6B6B" FontWeight="SemiBold"
+                            ToolTip.Tip="Delete this aircraft from your fleet"/>
                 </Grid>
+                
+                <Grid ColumnDefinitions="100, *" RowDefinitions="Auto, Auto" Margin="0,0,0,10">
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" Foreground="Gray" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedSimAircraft.Aircraft.DisplayName}" FontWeight="SemiBold" FontSize="16"/>
+                    
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Sim ID:" Foreground="Gray" VerticalAlignment="Center" Margin="0,5,0,0"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedSimAircraft.SimPlaneId}" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                </Grid>
+
+                <Separator Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" Margin="0,5"/>
+
+                <TextBlock Text="Performance Properties" FontWeight="Bold" FontSize="16"/>
+                
+                <ItemsControl ItemsSource="{Binding SelectedAircraftProperties}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}" CornerRadius="4" Padding="12" Margin="0,0,0,8">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                        <TextBlock Text="{Binding PropertyName}" FontWeight="SemiBold" Foreground="#4FACFE"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="12" Foreground="Gray" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding PropertyValue}" FontWeight="Bold" FontSize="16"/>
+                                        <TextBlock Text="{Binding Unit}" FontSize="14" Foreground="Gray" VerticalAlignment="Bottom" Margin="0,0,0,1"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</Grid>
             </TabItem>
 
             <TabItem Header="Aircraft Database" FontSize="16" FontWeight="SemiBold">
@@ -53,7 +93,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <Button Grid.Row="2" Content="+ Add Manufacturer" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0"/>
+                            <Button Grid.Row="2" Content="+ Add Manufacturer" Command="{Binding AddManufacturerCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0"/>
                         </Grid>
                     </Border>
 

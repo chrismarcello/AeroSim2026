@@ -169,6 +169,44 @@ namespace AeroSim2026.Core.Services
                 throw;
             }
         }
+        public async Task DeleteSimAircraftAsync(int simPlaneId)
+        {
+            try
+            {
+                var plane = await context.SimAircrafts.FindAsync(simPlaneId);
+                if (plane != null)
+                {
+                    context.SimAircrafts.Remove(plane);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting SimAircraft with ID {SimPlaneId}", simPlaneId);
+                throw;
+            }
+        }
 
+        public async Task<AircraftManufacturer> AddAircraftManufacturerAsync(string name)
+        {
+            try
+            {
+                var newManufacturer = new AircraftManufacturer
+                {
+                    ManufacturerId = Guid.NewGuid().ToString(), // Generate a unique string ID
+                    ManufacturerName = name
+                };
+
+                context.AircraftManufacturers.Add(newManufacturer);
+                await context.SaveChangesAsync();
+
+                return newManufacturer;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding aircraft manufacturer");
+                throw;
+            }
+        }
     }
 }

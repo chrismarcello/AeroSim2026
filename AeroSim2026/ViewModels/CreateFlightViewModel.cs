@@ -52,8 +52,8 @@ namespace AeroSim2026.ViewModels
         private int _plannedSpeed = 150;
         private double _totalDistance;
         private TimeSpan _estimatedTime;
-        private MemoryLayer _routeLineLayer;
-        private MemoryLayer _routeMarkerLayer;
+        private MemoryLayer? _routeLineLayer;
+        private MemoryLayer? _routeMarkerLayer;
         private RouteOption? _selectedRouteOption;
 
         public SimAircraft? SelectedAircraft
@@ -235,9 +235,9 @@ namespace AeroSim2026.ViewModels
 
                                 if (leg.SequenceNumber > 1 && leg.SequenceNumber < proposed.Legs.Count)
                                 {
-                                    routeNames.Add(leg.Waypoint.Identifier);
+                                    routeNames.Add(leg.Waypoint.Identifier!);
                                     string airwayStr = string.IsNullOrEmpty(leg.AirwayName) ? "DCT" : $"via {leg.AirwayName}";
-                                    details.Add($"  {leg.SequenceNumber - 1:D2}. {leg.Waypoint.Identifier.PadRight(5)} {airwayStr}");
+                                    details.Add($"  {leg.SequenceNumber - 1:D2}. {leg.Waypoint.Identifier!.PadRight(5)} {airwayStr}");
                                 }
 
                                 // We map these into EF Entities here so the Save command can easily save them to DB later
@@ -299,14 +299,15 @@ namespace AeroSim2026.ViewModels
                     var newPlan = new FlightPlan
                     {
                         FlightPlanId = Guid.NewGuid().ToString(),
-                        DateCreated = DateTime.UtcNow,
+                        DateCreated = DateTime.Now,
+                        AircraftModel = SelectedAircraft.Aircraft,
                         AircraftModelId = SelectedAircraft.AircraftId.ToString(),
                         StartAirportId = OriginAirport.AirportId,
                         EndAirportId = DestAirport.AirportId,
                         CruiseAltitude = SelectedCruiseAltitude,
                         DistanceNm = (int)Math.Round(TotalDistance),
                         EstFlightTime = EstimatedTime,
-                        Comments = SelectedRouteOption != null ? $"Route: {SelectedRouteOption.RouteString}" : "Direct",
+                        Comments = string.Empty,
                         FlightPlanRoutes = new List<FlightPlanRoute>()
                     };
 
@@ -613,7 +614,7 @@ namespace AeroSim2026.ViewModels
                                 if (OriginAirport != null && node.Identifier == OriginAirport.Ident) continue;
                                 if (DestAirport != null && node.Identifier == DestAirport.Ident) continue;
 
-                                markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier, node.NavType));
+                                markerFeatures.Add(_mapFeatureFactory.CreateWaypointFeature(node.Latitude, node.Longitude, node.Identifier!, node.NavType!));
                             }
                         }
                     }
@@ -697,7 +698,7 @@ namespace AeroSim2026.ViewModels
             if (_routeLineLayer != null)
             {
                 _routeLineLayer.Features = new List<GeometryFeature>();
-                _routeMarkerLayer.DataHasChanged();
+                _routeMarkerLayer?.DataHasChanged();
                 FlightMap?.Refresh();
             }
 

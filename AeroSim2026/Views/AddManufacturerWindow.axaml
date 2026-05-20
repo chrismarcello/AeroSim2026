@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AeroSim2026.ViewModels"
+        x:Class="AeroSim2026.Views.AddManufacturerWindow"
+        x:DataType="vm:AddManufacturerViewModel"
+        Title="Add Manufacturer" 
+        Height="150" Width="350"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    
+    <Grid RowDefinitions="Auto,*,Auto" Margin="20">
+        <TextBlock Grid.Row="0" Text="Add New Manufacturer" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+        
+        <TextBox Grid.Row="1" Text="{Binding ManufacturerName}" Watermark="e.g. Boeing, Airbus, Cessna" VerticalAlignment="Center"/>
+        
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button Content="Cancel" Command="{Binding CancelCommand}"/>
+            <Button Content="Save" Command="{Binding SaveCommand}" Classes="accent"/>
+        </StackPanel>
+    </Grid>
+</Window>

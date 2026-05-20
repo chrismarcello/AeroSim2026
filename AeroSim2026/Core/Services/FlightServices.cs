@@ -248,78 +248,109 @@ namespace AeroSim2026.Core.Services
             }
         }
         public async Task<FlightPlan> SaveFlightPlanAsync(FlightPlan flightPlan)
+{
+    // 0. The Desktop Silver Bullet: Flush the tracker!
+    // This wipes EF Core's memory of any waypoints it tracked during previous random flight generations.
+    context.ChangeTracker.Clear();
+
+    // 1. Explicitly copy the IDs to satisfy SQLite NOT NULL constraints
+    if (flightPlan.StartAirport != null) flightPlan.StartAirportId = flightPlan.StartAirport.AirportId;
+    if (flightPlan.EndAirport != null) flightPlan.EndAirportId = flightPlan.EndAirport.AirportId;
+    if (flightPlan.AircraftModel != null) flightPlan.AircraftModelId = flightPlan.AircraftModel.AircraftModelId;
+
+    // 2. Setup caches for our complex navigation properties
+    var waypointCache = new Dictionary<FlightPlanRoute, Waypoint?>();
+    var airwayCache = new Dictionary<FlightPlanRoute, Airway?>();
+    
+    var startAirportCache = flightPlan.StartAirport;
+    var endAirportCache = flightPlan.EndAirport;
+    var aircraftCache = flightPlan.AircraftModel;
+
+    // 3. Hide root navigation objects from EF Core
+    flightPlan.StartAirport = null;
+    flightPlan.EndAirport = null;
+    flightPlan.AircraftModel = null;
+
+    // 4. Hide Route navigation objects to prevent Identity Conflicts
+    if (flightPlan.FlightPlanRoutes != null)
+    {
+        foreach (var route in flightPlan.FlightPlanRoutes)
         {
-            var waypointCache = new Dictionary<FlightPlanRoute, Waypoint?>();
-            var airwayCache = new Dictionary<FlightPlanRoute, Airway?>();
+            // Cache the objects
+            waypointCache[route] = route.Waypoint;
+            airwayCache[route] = route.Airway;
 
-            // 1. ONLY hide the Waypoints to prevent the Identity Tracking conflicts
-            if (flightPlan.FlightPlanRoutes != null)
-            {
-                foreach (var route in flightPlan.FlightPlanRoutes)
-                {
-                    waypointCache[route] = route.Waypoint;
-                    route.Waypoint = null;
-
-                    airwayCache[route] = route.Airway;
-                    route.Airway = null;
-                }
-            }
-
-            // We no longer hide Aircraft or Airports! Leave them completely intact.
-
-            try
-            {
-                // 2. Add the flight plan graph
-                context.FlightPlans.Add(flightPlan);
-
-                // 3. Explicitly tell EF Core that the Aircraft and Airports already exist in the database.
-                // This prevents EF Core from trying to INSERT duplicates of them!
-                if (flightPlan.StartAirport != null) context.Entry(flightPlan.StartAirport).State = EntityState.Unchanged;
-                if (flightPlan.EndAirport != null) context.Entry(flightPlan.EndAirport).State = EntityState.Unchanged;
-                if (flightPlan.AircraftModel != null) context.Entry(flightPlan.AircraftModel).State = EntityState.Unchanged;
-
-                await context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error adding flight plan");
-                throw;
-            }
-            finally
-            {
-                // 4. Restore ONLY the Waypoints
-                if (flightPlan.FlightPlanRoutes != null)
-                {
-                    foreach (var route in flightPlan.FlightPlanRoutes)
-                    {
-                        if (waypointCache.TryGetValue(route, out var cachedWaypoint))
-                        {
-                            route.Waypoint = cachedWaypoint;
-                        }
-                        if (airwayCache.TryGetValue(route, out var cachedAirway))
-                        {
-                            route.Airway = cachedAirway;
-                        }
-                    }
-                }
-            }
-
-            return flightPlan;
+            // Blind EF Core to the objects so it doesn't traverse them
+            route.Waypoint = null;
+            route.Airway = null;
         }
+    }
+
+    try
+    {
+        // 5. Add and Save! Because the objects are null, EF Core just uses the IDs
+        context.FlightPlans.Add(flightPlan);
+        await context.SaveChangesAsync();
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error adding flight plan");
+        throw;
+    }
+    finally
+    {
+        // 6. Restore EVERYTHING so the UI Map and Details still render perfectly
+        flightPlan.StartAirport = startAirportCache;
+        flightPlan.EndAirport = endAirportCache;
+        flightPlan.AircraftModel = aircraftCache;
+
+        if (flightPlan.FlightPlanRoutes != null)
+        {
+            foreach (var route in flightPlan.FlightPlanRoutes)
+            {
+                if (waypointCache.TryGetValue(route, out var cachedWaypoint))
+                {
+                    route.Waypoint = cachedWaypoint;
+                }
+                if (airwayCache.TryGetValue(route, out var cachedAirway))
+                {
+                    route.Airway = cachedAirway;
+                }
+            }
+        }
+    }
+
+    return flightPlan;
+}
         public async Task<FlightPlan> UpdateFlightPlanAsync(FlightPlan flightPlan)
         {
             try
             {
+                context.ChangeTracker.Clear();
                 flightPlan.LastModified = DateTime.Now;
 
-                context.FlightPlans.Update(flightPlan);
-                await context.SaveChangesAsync();
+                // Fetch the existing record directly from the database context
+                var existingFlight = await context.FlightPlans.FindAsync(flightPlan.FlightPlanId);
+
+                if (existingFlight != null)
+                {
+                    // Only update the scalar properties that can actually change in the UI
+                    existingFlight.Comments = flightPlan.Comments;
+                    existingFlight.DateFlown = flightPlan.DateFlown;
+                    existingFlight.CruiseAltitude = flightPlan.CruiseAltitude;
+                    existingFlight.AircraftCrashed = flightPlan.AircraftCrashed;
+                    existingFlight.LastModified = flightPlan.LastModified;
+
+                    // Because existingFlight is being natively tracked, EF knows exactly what to UPDATE
+                    // without ever touching your complex UI object graph!
+                    await context.SaveChangesAsync();
+                }
 
                 return flightPlan;
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Error updating flight plane for {flightPlan.FlightPlanId}", flightPlan.FlightPlanId);
+                logger.LogError(ex, $"Error updating flight plan for {flightPlan.FlightPlanId}", flightPlan.FlightPlanId);
                 throw;
             }
         }

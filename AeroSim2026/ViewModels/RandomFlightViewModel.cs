@@ -422,7 +422,8 @@ namespace AeroSim2026.ViewModels
                 {
                     FlightPlanId = Guid.NewGuid().ToString(),
                     DateCreated = DateTime.Now,
-                    AircraftModelId = SelectedAircraft.AircraftId.ToString(),
+                    AircraftModel = SelectedAircraft.Aircraft,
+                    AircraftModelId = SelectedAircraft.Aircraft.AircraftModelId,
                     StartAirportId = origin.AirportId,
                     EndAirportId = dest.AirportId,
                     CruiseAltitude = CruiseAltitude > 0 ? CruiseAltitude : 5000,

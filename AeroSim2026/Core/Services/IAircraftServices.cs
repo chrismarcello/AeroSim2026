@@ -11,5 +11,7 @@ namespace AeroSim2026.Core.Services
         Task<List<AircraftManufacturer>> GetAircraftManufacturerAsync();
         Task<List<AircraftType>> GetAircraftTypesForManufacturerAsync(string manufacturerId);
         Task<List<AircraftModel>> GetAircraftModelsForTypeAsync(string aircraftTypeId);
+        Task DeleteSimAircraftAsync(int simPlaneId);
+        Task<AircraftManufacturer> AddAircraftManufacturerAsync(string name);
     }
 }

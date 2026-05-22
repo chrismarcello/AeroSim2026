@@ -24,12 +24,12 @@ namespace AeroSim2026.ViewModels
 {
     public class MapViewModel : ReactiveObject
     {
-        private Map _map;
+        private Map _map = null!;
         private MemoryLayer _routeLayer;
 
         // Cache the images so we only load them once per app session
-        private static string? _cachedDepartIconSource;
-        private static string? _cachedDestIconSource;
+        //private static string? _cachedDepartIconSource;
+        //private static string? _cachedDestIconSource;
 
         public Map Map
         {

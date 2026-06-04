@@ -1,4 +1,5 @@
 ﻿using AeroSim2026.EFModels;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -12,6 +13,9 @@ namespace AeroSim2026.Core.Services
         Task<List<AircraftType>> GetAircraftTypesForManufacturerAsync(string manufacturerId);
         Task<List<AircraftModel>> GetAircraftModelsForTypeAsync(string aircraftTypeId);
         Task DeleteSimAircraftAsync(int simPlaneId);
-        Task<AircraftManufacturer> AddAircraftManufacturerAsync(string name);
+        Task<AircraftManufacturer> AddAircraftManufacturerAsync(string name, string countryIso);
+        Task<List<string>> GetDistinctAircraftFamiliesAsync();
+        Task<List<string>> GetDistinctEngineFamiliesAsync();
+        Task<AircraftType> AddAircraftTypeAsync(string manufacturerId, string name, string typeCode, string aircraftFamily, string engineFamily);
     }
 }

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using AeroSim2026.EFModels;
+using AeroSim2026.Models;
+using Mapsui.Nts.Providers.Shapefile.Indexing;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mapsui.Nts.Providers.Shapefile.Indexing;
-using AeroSim2026.Models;
 
 namespace AeroSim2026.Core.Routing
 {
@@ -16,33 +17,28 @@ namespace AeroSim2026.Core.Routing
         }
 
         // Pass cruiseAltitude in here so we respect the aircraft's capabilities
-        public List<ProposedRoute> FindAlternativesRoutes(RouteNode startNode, RouteNode endNode, int cruiseAltitude)
+        public List<ProposedRoute> FindAlternativesRoutes(RouteNode startNode, RouteNode endNode, Airport origin, Airport destination, int cruiseAltitude)
         {
             var routes = new List<ProposedRoute>();
 
-            // Route 1: Standard Shortest Path (balanced penalties)
-            var standardEdges = FindRoute(startNode, endNode, cruiseAltitude, switchPenalty: 10.0, directMultiplier: 1.25);
+            // Pass origin and destination down
+            var standardEdges = FindRoute(startNode, endNode, origin, destination, cruiseAltitude, switchPenalty: 10.0, directMultiplier: 1.25);
             if (standardEdges != null && standardEdges.Count > 0)
             {
                 routes.Add(BuildProposedRoute("Standard Route", standardEdges, startNode));
             }
 
-            // Route 2: Airway Preferred (high penalty for direct GPS routing, lower penalty for staying on airways)
-            var airwayEdges = FindRoute(startNode, endNode, cruiseAltitude, switchPenalty: 5.0, directMultiplier: 3.0);
-
+            var airwayEdges = FindRoute(startNode, endNode, origin, destination, cruiseAltitude, switchPenalty: 5.0, directMultiplier: 3.0);
             if (airwayEdges != null && airwayEdges.Count > 0 && !AreRoutesIdentical(standardEdges!, airwayEdges))
             {
                 routes.Add(BuildProposedRoute("Airway Preferred", airwayEdges, startNode));
             }
 
-            // Optional Route 3: Direct GPS (if you wanted to just show a straight line option for comparison)
-            // ...
-
             return routes;
         }
 
         // cruiseAltitude is back, along with dynamic penalties
-        public List<RouteEdge> FindRoute(RouteNode startNode, RouteNode endNode, int cruiseAltitude, double switchPenalty, double directMultiplier)
+        public List<RouteEdge> FindRoute(RouteNode startNode, RouteNode endNode, Airport origin, Airport destination, int cruiseAltitude, double switchPenalty, double directMultiplier)
         {
             if (startNode == null || endNode == null)
                 return new List<RouteEdge>();
@@ -74,13 +70,32 @@ namespace AeroSim2026.Core.Routing
                     if (closedSet.Contains(neighbor!.WaypointId))
                         continue;
 
-                    // if we are within 80NM of the destingation, reject high altitude airways that would be inefficient for short hops
-                    double distToDest = GeoMath.Distance(neighbor.Latitude, neighbor.Longitude, endNode.Latitude, endNode.Longitude);
-
-                    if (distToDest < 80.0 && edge.MinimumAltitude.HasValue && edge.MinimumAltitude.Value > 10000)
+                    // --- Physics constraint bloock: Altitude-based airway filtering ---
+                    if (edge.MinimumAltitude.HasValue)
                     {
-                        continue;
+                        double requiredClimbDistance = edge.MinimumAltitude.Value / 500.0; // Assuming 500 ft/nm climb rate
+                        double requiredDescentDistance = edge.MinimumAltitude.Value / 318.0; // Assuming 318 ft/nm descent rate
+
+                        // Check distance from the actual runways
+                        double distFromOrigin = GeoMath.Distance(origin.Laty, origin.Lonx, neighbor.Latitude, neighbor.Longitude);
+                        double distToDest = GeoMath.Distance(neighbor.Latitude, neighbor.Longitude, destination.Laty, destination.Lonx);
+
+                        // Reject the airway if it is physically impossible to climb to or descend from it in time
+                        if (distFromOrigin < requiredClimbDistance || distToDest < requiredDescentDistance)
+                        {
+                            continue; // Skip this airway, force A* to find a lower/closer alternative
+                        }
                     }
+                    if (edge.MinimumAltitude.HasValue && cruiseAltitude < edge.MinimumAltitude.Value) continue;
+                    if (edge.MaximumAltitude.HasValue && cruiseAltitude > edge.MaximumAltitude.Value) continue;
+
+                    // if we are within 80NM of the destingation, reject high altitude airways that would be inefficient for short hops
+                    //double distToDest = GeoMath.Distance(neighbor.Latitude, neighbor.Longitude, endNode.Latitude, endNode.Longitude);
+
+                    //if (distToDest < 80.0 && edge.MinimumAltitude.HasValue && edge.MinimumAltitude.Value > 10000)
+                    //{
+                    //    continue;
+                    //}
 
                     // RESTORED: Vital for realistic airway routing
                     if (edge.MinimumAltitude.HasValue && cruiseAltitude < edge.MinimumAltitude.Value)

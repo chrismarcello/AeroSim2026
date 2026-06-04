@@ -19,8 +19,9 @@ namespace AeroSim2026.ViewModels
         private readonly FlightRouteBuilder _flightRouteBuilder;
         private readonly RoutingGraph _routingGraph;
         private readonly IMapFeatureFactory _mapFeatureFactory;
+        private readonly IGeographyServices _geographyServices;
         public IStatusService StatusService { get; }
-        public MainWindowViewModel(ILogger<SavedFlightsViewModel> logger, IFlightServices flightservices, IAircraftServices aircraftServices, IAirportServices airportServices, INavigationServices navigationServices, IStatusService statusService, FlightRouteBuilder flightRouteBuilder, RoutingGraph routingGraph, IMapFeatureFactory mapFeatureFactory)
+        public MainWindowViewModel(ILogger<SavedFlightsViewModel> logger, IFlightServices flightservices, IAircraftServices aircraftServices, IAirportServices airportServices, INavigationServices navigationServices, IStatusService statusService, FlightRouteBuilder flightRouteBuilder, RoutingGraph routingGraph, IMapFeatureFactory mapFeatureFactory, IGeographyServices geographyServices)
         {
             _logger = logger;
             StatusService = statusService;
@@ -31,6 +32,7 @@ namespace AeroSim2026.ViewModels
             _flightRouteBuilder = flightRouteBuilder;
             _routingGraph = routingGraph;
             _mapFeatureFactory = mapFeatureFactory;
+            _geographyServices = geographyServices;
 
             Pages = new ObservableCollection<PageViewModelBase>
             {
@@ -38,7 +40,7 @@ namespace AeroSim2026.ViewModels
                 new SavedFlightsViewModel(_logger,_flightServices, _mapFeatureFactory, StatusService, Navigate),
                 new CreateFlightViewModel(_aircraftServices, _airportServices, _navigationServices, _flightServices, StatusService, _flightRouteBuilder, _routingGraph, _mapFeatureFactory, Navigate),
                 new RandomFlightViewModel(_aircraftServices, _airportServices, _navigationServices, _flightServices, StatusService, _flightRouteBuilder, _routingGraph, mapFeatureFactory, Navigate),
-                new AircraftManagerViewModel(_aircraftServices, StatusService),
+                new AircraftManagerViewModel(_aircraftServices, StatusService, _geographyServices),
                 new SettingsViewModel()                
                 
             };

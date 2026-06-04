@@ -107,7 +107,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <Button Grid.Row="2" Content="+ Add Type" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" IsEnabled="{Binding SelectedManufacturer, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                            <Button Grid.Row="2" Content="+ Add Type" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" Command="{Binding AddTypeCommand}" IsEnabled="{Binding SelectedManufacturer, Converter={x:Static ObjectConverters.IsNotNull}}"/>
                         </Grid>
                     </Border>
 

@@ -74,6 +74,7 @@ namespace AeroSim2026
             services.AddTransient<ConnectionManager>();
             services.AddTransient<RouteFinderService>();
             services.AddTransient<FlightRouteBuilder>();
+            services.AddTransient<IGeographyServices, GeographyServices>();
             var serviceProvider = services.BuildServiceProvider();
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

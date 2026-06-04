@@ -15,6 +15,7 @@ namespace AeroSim2026.ViewModels
     {
         private readonly IAircraftServices _aircraftServices;
         private readonly IStatusService _statusService;
+        private readonly IGeographyServices _geographyServices;
         public override string Title => $"Aircraft Manager";
 
         // --- Tab 1: The Fleet ---
@@ -54,9 +55,13 @@ namespace AeroSim2026.ViewModels
             }
         }
 
-        // The Interaction: It asks for an AddManufacturerViewModel, and expects a string? back.
-        public Interaction<AddManufacturerViewModel, string?> ShowAddManufacturerDialog { get; } = new();
+        // The Interaction: It asks for an AddManufacturerViewModel, and expects a (string Name, string CountryIso)? back.
+        public Interaction<AddManufacturerViewModel, (string Name, string CountryIso)?> ShowAddManufacturerDialog { get; } = new();
         public ReactiveCommand<Unit, Unit> AddManufacturerCommand { get; }
+
+        public Interaction<AddAircraftTypeViewModel, (string Name, string Code, string AirFam, string EngFam)?> ShowAddTypeDialog { get; } = new();
+        public ReactiveCommand<Unit, Unit> AddTypeCommand { get; }
+
 
         private AircraftType? _selectedType;
         public AircraftType? SelectedType
@@ -78,10 +83,11 @@ namespace AeroSim2026.ViewModels
         
 
 
-        public AircraftManagerViewModel(IAircraftServices aircraftServices, IStatusService statusService)
+        public AircraftManagerViewModel(IAircraftServices aircraftServices, IStatusService statusService, IGeographyServices geographyServices)
         {
             _aircraftServices = aircraftServices;
             _statusService = statusService;
+            _geographyServices = geographyServices;
             // Load initial data
             RefreshDataCommand = ReactiveCommand.CreateFromTask(LoadInitialDataAsync);
 
@@ -90,6 +96,11 @@ namespace AeroSim2026.ViewModels
             DeleteAircraftCommand = ReactiveCommand.CreateFromTask(DeleteAircraftAsync, canDelete);
 
             AddManufacturerCommand = ReactiveCommand.CreateFromTask(AddManufacturerAsync);
+
+            var canAddType = this.WhenAnyValue(x => x.SelectedManufacturer)
+                     .Select(mfr => mfr != null);
+
+            AddTypeCommand = ReactiveCommand.CreateFromTask(AddTypeAsync, canAddType);
 
             RxSchedulers.MainThreadScheduler.Schedule(() => { _ = LoadInitialDataAsync(); });
         }
@@ -222,18 +233,18 @@ namespace AeroSim2026.ViewModels
         }
         private async Task AddManufacturerAsync()
         {
-            var dialogViewModel = new AddManufacturerViewModel();
+            var dialogViewModel = new AddManufacturerViewModel(_geographyServices);
 
             // This pauses the method and waits for the user to close the popup!
-            var resultName = await ShowAddManufacturerDialog.Handle(dialogViewModel);
-
-            if (!string.IsNullOrWhiteSpace(resultName))
+            var result = await ShowAddManufacturerDialog.Handle(dialogViewModel);
+            
+            if (result.HasValue)
             {
                 _statusService.IsBusy = true;
                 _statusService.StatusMessage = "Saving Manufacturer...";
                 try
                 {
-                    var newMfr = await _aircraftServices.AddAircraftManufacturerAsync(resultName);
+                    var newMfr = await _aircraftServices.AddAircraftManufacturerAsync(result.Value.Name, result.Value.CountryIso);
                     // Add it to the UI list so it shows up instantly
                     Manufacturers.Add(newMfr);
                     // Select the newly created item
@@ -250,5 +261,39 @@ namespace AeroSim2026.ViewModels
                 }
             }
         }
+        private async Task AddTypeAsync()
+        {
+            if (SelectedManufacturer == null) return;
+            var dialogViewModel = new AddAircraftTypeViewModel(_aircraftServices,SelectedManufacturer.ManufacturerName);
+            // This pauses the method and waits for the user to close the popup!
+            var result = await ShowAddTypeDialog.Handle(dialogViewModel);
+            if (result.HasValue)
+            {
+                _statusService.IsBusy = true;
+                _statusService.StatusMessage = "Saving Aircraft Type...";
+                try
+                {
+                    var newType = await _aircraftServices.AddAircraftTypeAsync(
+                SelectedManufacturer.ManufacturerId,
+                result.Value.Name,
+                result.Value.Code,
+                result.Value.AirFam,
+                result.Value.EngFam);
+
+                    Types.Add(newType);
+                    SelectedType = newType; // Auto-select the newly added type
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to save aircraft type: {ex.Message}");
+                }
+                finally
+                {
+                    _statusService.IsBusy = false;
+                    _statusService.StatusMessage = string.Empty;
+                }
+            }
+        }
+        
     }
 }

@@ -1,0 +1,37 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:vm="using:AeroSim2026.ViewModels"
+        x:Class="AeroSim2026.Views.AddAircraftTypeWindow"
+        x:DataType="vm:AddAircraftTypeViewModel"
+        Title="Add Aircraft Type" 
+        Height="450" Width="550"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    
+<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" Margin="20">
+    <TextBlock Grid.Row="0" Text="{Binding ManufacturerName, StringFormat='Adding Type to: {0}'}" 
+               FontWeight="Bold" FontSize="16" Margin="0,0,0,15"/>
+   
+    <TextBox Grid.Row="1" Text="{Binding TypeName}" 
+             PlaceholderText="Type Name (e.g. 737-800)" Margin="0,0,0,10"/>
+    
+    <TextBox Grid.Row="2" Text="{Binding TypeCode}" 
+             PlaceholderText="Type Code (e.g. B738)" Margin="0,0,0,10"/>
+    
+    <ComboBox Grid.Row="3" ItemsSource="{Binding AvailableAircraftFamilies}" 
+              SelectedItem="{Binding SelectedAircraftFamily}"
+              HorizontalAlignment="Stretch" Margin="0,0,0,10"/>
+              
+    <ComboBox Grid.Row="4" ItemsSource="{Binding AvailableEngineFamilies}" 
+              SelectedItem="{Binding SelectedEngineFamily}"
+              HorizontalAlignment="Stretch" Margin="0,0,0,10"/>
+    
+    <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <Button Content="Cancel" Command="{Binding CancelCommand}"/>
+        <Button Content="Save" Command="{Binding SaveCommand}" Classes="accent"/>
+    </StackPanel>
+</Grid>
+</Window>

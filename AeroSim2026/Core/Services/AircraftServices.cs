@@ -129,7 +129,7 @@ namespace AeroSim2026.Core.Services
             try
             {
                 return await context.AircraftManufacturers
-                    .Where(m => m.AircraftTypes.Any())
+                    //.Where(m => m.AircraftTypes.Any())
                     .OrderBy(m => m.ManufacturerName)
                     .ToListAsync();
             }
@@ -187,14 +187,15 @@ namespace AeroSim2026.Core.Services
             }
         }
 
-        public async Task<AircraftManufacturer> AddAircraftManufacturerAsync(string name)
+        public async Task<AircraftManufacturer> AddAircraftManufacturerAsync(string name, string countryIso)
         {
             try
             {
                 var newManufacturer = new AircraftManufacturer
                 {
                     ManufacturerId = Guid.NewGuid().ToString(), // Generate a unique string ID
-                    ManufacturerName = name
+                    ManufacturerName = name,
+                    ManufacturerCountry = countryIso
                 };
 
                 context.AircraftManufacturers.Add(newManufacturer);
@@ -205,6 +206,75 @@ namespace AeroSim2026.Core.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error adding aircraft manufacturer");
+                throw;
+            }
+        }
+        public async Task<List<string>> GetDistinctAircraftFamiliesAsync()
+        {
+            try
+            {
+                // Scans the table, grabs just the Family column, removes duplicates, and alphabetizes it!
+                return await context.AircraftTypes
+                    .Where(t => !string.IsNullOrEmpty(t.AircraftFamily))
+                    .Select(t => t.AircraftFamily!)
+                    .Distinct()
+                    .OrderBy(f => f)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving distinct aircraft families");
+                throw;
+            }
+        }
+        public async Task<List<string>> GetDistinctEngineFamiliesAsync()
+        {
+            try
+            {
+                return await context.AircraftTypes
+        .Where(t => !string.IsNullOrEmpty(t.EngineFamily))
+        .Select(t => t.EngineFamily!)
+        .Distinct()
+        .OrderBy(f => f)
+        .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving distinct engine families");
+                throw;
+            }
+        }
+        public async Task<AircraftType> AddAircraftTypeAsync(string manufacturerId, string name, string typeCode, string aircraftFamily, string engineFamily)
+        {
+            try
+            {
+                var manufacturer = await context.AircraftManufacturers.FindAsync(manufacturerId.ToString());
+                if (manufacturer == null)
+                {
+                    throw new Exception("Manufacturer not found");
+                }
+                var newType = new AircraftType
+                {
+                    AircraftTypeId = Guid.NewGuid().ToString(),
+                    AircraftTypeName = name,
+                    IcaoCode = typeCode,
+                    Manufacturer = manufacturerId.ToString(),
+                    AircraftFamily = aircraftFamily,
+                    EngineFamily = engineFamily
+                };
+                context.AircraftTypes.Add(newType);
+                // Tell SQLite to ignore the broken database blueprint
+                await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = OFF;");
+
+                await context.SaveChangesAsync();
+
+                // Turn it back on to protect the rest of your app
+                await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON;");
+                return newType;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding aircraft type");
                 throw;
             }
         }

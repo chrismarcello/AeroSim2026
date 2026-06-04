@@ -33,7 +33,8 @@ namespace AeroSim2026.Core.Routing
 
             if (entryNode == null || exitNode == null) return new List<ProposedRoute>();
 
-            return _routeFinder.FindAlternativesRoutes(entryNode, exitNode, cruiseAltitude);
+            // Pass the origin and destination to the service
+            return _routeFinder.FindAlternativesRoutes(entryNode, exitNode, origin, destination, cruiseAltitude);
         }
 
         // 2. Change to async Task
@@ -51,7 +52,7 @@ namespace AeroSim2026.Core.Routing
                 return CreateDirectRoute(origin, destination);
             }
 
-            var pathEdges = _routeFinder.FindRoute(entryNode, exitNode, cruiseAltitude, 10.0, 1.25);
+            var pathEdges = _routeFinder.FindRoute(entryNode, exitNode, origin, destination, cruiseAltitude, 10.0, 1.25);
             if (pathEdges == null || pathEdges.Count == 0)
             {
                 return CreateDirectRoute(origin, destination);
@@ -125,8 +126,16 @@ namespace AeroSim2026.Core.Routing
         {
             if (routeList == null || !routeList.Any()) return;
 
-            double originAlt = 0;
-            double destAlt = 0;
+            double originAlt = origin.Altitude;
+            double destAlt = destination.Altitude;
+
+            // Ensure Cruise Altitude is physically possible! 
+            // It must be higher than both the origin and destination (let's add a 2,000 ft safety buffer)
+            double highestAirportElevation = Math.Max(originAlt, destAlt);
+            double minSafeCruise = highestAirportElevation + 2000.0;
+
+            // Override the cruise altitude if it's below the minimum safe level
+            double safeCruiseAltitude = Math.Max(cruiseAltitude, minSafeCruise);
 
             const double climbGradient = 500.0;
             const double descentGradient = 318.0;
@@ -164,7 +173,7 @@ namespace AeroSim2026.Core.Routing
                 double maxClimbAlt = originAlt + (distFromOrig * climbGradient);
                 double maxDescAlt = destAlt + (distToDest * descentGradient);
 
-                double calculatedAlt = Math.Min(cruiseAltitude, Math.Min(maxClimbAlt, maxDescAlt));
+                double calculatedAlt = Math.Min(safeCruiseAltitude, Math.Min(maxClimbAlt, maxDescAlt));
 
                 if (routeList[i].Airway != null)
                 {

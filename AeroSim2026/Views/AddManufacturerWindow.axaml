@@ -4,16 +4,20 @@
         x:Class="AeroSim2026.Views.AddManufacturerWindow"
         x:DataType="vm:AddManufacturerViewModel"
         Title="Add Manufacturer" 
-        Height="150" Width="350"
+        Height="200" Width="350"
         WindowStartupLocation="CenterOwner"
         CanResize="False">
     
-    <Grid RowDefinitions="Auto,*,Auto" Margin="20">
+    <Grid RowDefinitions="Auto,*,*,Auto" Margin="20">
         <TextBlock Grid.Row="0" Text="Add New Manufacturer" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
         
         <TextBox Grid.Row="1" Text="{Binding ManufacturerName}" PlaceholderText="e.g. Boeing, Airbus, Cessna" VerticalAlignment="Center"/>
-        
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,15,0,0">
+        <ComboBox Grid.Row="2" ItemsSource="{Binding AvailableCountries}"
+                  SelectedItem="{Binding SelectedCountry}"
+                  DisplayMemberBinding="{Binding Name}"
+                  HorizontalAlignment="Stretch"
+                  PlaceholderText="Select Country..."/>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,15,0,0">
             <Button Content="Cancel" Command="{Binding CancelCommand}"/>
             <Button Content="Save" Command="{Binding SaveCommand}" Classes="accent"/>
         </StackPanel>

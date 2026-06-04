@@ -21,10 +21,13 @@ public partial class AircraftManagerView : ReactiveUserControl<AircraftManagerVi
             if (ViewModel != null)
             {
                 d(ViewModel.ShowAddManufacturerDialog.RegisterHandler(interaction => DoShowAddDialogAsync(interaction)));
+
+                d(ViewModel.ShowAddTypeDialog.RegisterHandler(interaction => DoShowAddTypeDialogAsync(interaction)));
             }
+        
         });
     }
-    private async Task DoShowAddDialogAsync(IInteractionContext<AddManufacturerViewModel, string?> interaction)
+    private async Task DoShowAddDialogAsync(IInteractionContext<AddManufacturerViewModel, (string, string)?> interaction)
     {
         var dialog = new AddManufacturerWindow
         {
@@ -34,9 +37,22 @@ public partial class AircraftManagerView : ReactiveUserControl<AircraftManagerVi
         // Find the main window so the popup centers over it and blocks it
         var parentWindow = TopLevel.GetTopLevel(this) as Window;
 
-        var result = await dialog.ShowDialog<string?>(parentWindow!);
+        var result = await dialog.ShowDialog<(string, string)?>(parentWindow!);
 
         // Pass the string back to the ViewModel
+        interaction.SetOutput(result);
+    }
+    private async Task DoShowAddTypeDialogAsync(IInteractionContext<AddAircraftTypeViewModel, (string Name, string Code, string AirFam, string EngFam)?> interaction)
+    {
+        // NOTE: Make sure you have created AddAircraftTypeWindow.axaml in your Views folder!
+        var dialog = new AddAircraftTypeWindow
+        {
+            DataContext = interaction.Input
+        };
+
+        var parentWindow = TopLevel.GetTopLevel(this) as Window;
+        var result = await dialog.ShowDialog<(string, string, string, string)?>(parentWindow!);
+
         interaction.SetOutput(result);
     }
 }

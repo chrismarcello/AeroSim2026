@@ -9,9 +9,9 @@ using System.Reactive.Disposables.Fluent;
 
 namespace AeroSim2026.Views;
 
-public partial class AddManufacturerWindow : ReactiveWindow<AddManufacturerViewModel>
+public partial class AddAircraftTypeWindow : ReactiveWindow<AddAircraftTypeViewModel>
 {
-    public AddManufacturerWindow()
+    public AddAircraftTypeWindow()
     {
         InitializeComponent();
 

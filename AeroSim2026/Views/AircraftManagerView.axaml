@@ -112,16 +112,19 @@
                     </Border>
 
                     <Border Grid.Column="2" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" CornerRadius="6" Padding="10">
-                        <Grid RowDefinitions="Auto, *, Auto">
+                        <Grid RowDefinitions="Auto, *, Auto, Auto">
                             <TextBlock Grid.Row="0" Text="Models" FontWeight="Bold" Margin="5,0,0,10"/>
-                            <ListBox Grid.Row="1" ItemsSource="{Binding Models}" SelectedItem="{Binding }">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding AircraftName}" Margin="5"/>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                            <Button Grid.Row="2" Content="+ Add Model" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" IsEnabled="{Binding SelectedType, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+        
+                                <ListBox Grid.Row="1" ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding AircraftName}" Margin="5"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                                <Button Grid.Row="2" Content="+ Add Model" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" Command="{Binding AddModelCommand}"/>
+        
+                                <Button Grid.Row="3" Content="Add to Fleet" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0,10,0,0" Classes="accent" Command="{Binding AddToFleetCommand}"/>
                         </Grid>
                     </Border>
                 </Grid>

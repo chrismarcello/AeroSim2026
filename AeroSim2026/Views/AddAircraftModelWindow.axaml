@@ -1,0 +1,45 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AeroSim2026.ViewModels"
+        x:Class="AeroSim2026.Views.AddAircraftModelWindow"
+        x:DataType="vm:AddAircraftModelViewModel"
+        Title="{Binding Title}"
+        Width="400" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+    
+    <Grid Margin="20" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto">
+        
+        <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <StackPanel Grid.Row="1" Margin="0,0,0,15">
+            <TextBlock Text="Model Name (e.g. 737-800)" FontWeight="SemiBold" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding Name}" PlaceholderText="Enter model name"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Margin="0,0,0,15">
+            <TextBlock Text="Native Name (Optional)" FontWeight="SemiBold" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding NativeName}" PlaceholderText="Enter native name"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3" Margin="0,0,0,15">
+            <TextBlock Text="Engine Count" FontWeight="SemiBold" Margin="0,0,0,5"/>
+            <NumericUpDown Value="{Binding EngineCount}" Minimum="0" Maximum="8" FormatString="0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4" Margin="0,0,0,20">
+            <TextBlock Text="Engine Models (Optional)" FontWeight="SemiBold" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding EngineModels}" PlaceholderText="e.g. CFM56-7B26"/>
+        </StackPanel>
+
+        <Grid Grid.Row="5" ColumnDefinitions="*, 15, *">
+            <Button Grid.Column="0" Content="Cancel" Command="{Binding CancelCommand}" 
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+            
+            <Button Grid.Column="2" Content="Save" Command="{Binding SaveCommand}" 
+                    Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+        </Grid>
+        
+    </Grid>
+</Window>

@@ -62,6 +62,20 @@ namespace AeroSim2026.ViewModels
         public Interaction<AddAircraftTypeViewModel, (string Name, string Code, string AirFam, string EngFam)?> ShowAddTypeDialog { get; } = new();
         public ReactiveCommand<Unit, Unit> AddTypeCommand { get; }
 
+        private AircraftModel? _selectedModel;
+        public AircraftModel? SelectedModel
+        {
+            get => _selectedModel;
+            set => this.RaiseAndSetIfChanged(ref _selectedModel, value);
+        }
+
+        // Interaction for the Model Dialog
+        public Interaction<AddAircraftModelViewModel, (string Name, string NativeName, int? EngineCount, string EngineModels)?> ShowAddModelDialog { get; } = new();
+
+        // Commands
+        public ReactiveCommand<Unit, Unit> AddModelCommand { get; }
+        public ReactiveCommand<Unit, Unit> AddToFleetCommand { get; }
+
 
         private AircraftType? _selectedType;
         public AircraftType? SelectedType
@@ -101,6 +115,14 @@ namespace AeroSim2026.ViewModels
                      .Select(mfr => mfr != null);
 
             AddTypeCommand = ReactiveCommand.CreateFromTask(AddTypeAsync, canAddType);
+
+            var canAddModel = this.WhenAnyValue(x => x.SelectedType)
+                      .Select(type => type != null);
+            AddModelCommand = ReactiveCommand.CreateFromTask(AddModelAsync, canAddModel);
+
+            var canAddToFleet = this.WhenAnyValue(x => x.SelectedModel)
+                                    .Select(model => model != null);
+            AddToFleetCommand = ReactiveCommand.CreateFromTask(AddToFleetAsync, canAddToFleet);
 
             RxSchedulers.MainThreadScheduler.Schedule(() => { _ = LoadInitialDataAsync(); });
         }
@@ -294,6 +316,70 @@ namespace AeroSim2026.ViewModels
                 }
             }
         }
-        
+        private async Task AddModelAsync()
+        {
+            if (SelectedType == null || SelectedManufacturer == null) return;
+
+            // NOTE: You will need to create AddAircraftModelViewModel next!
+            var dialogViewModel = new AddAircraftModelViewModel(SelectedType.AircraftTypeName);
+
+            var result = await ShowAddModelDialog.Handle(dialogViewModel);
+
+            if (result.HasValue)
+            {
+                _statusService.IsBusy = true;
+                _statusService.StatusMessage = "Saving Aircraft Model...";
+                try
+                {
+                    var newModel = await _aircraftServices.AddAircraftModelAsync(
+                        SelectedType.AircraftTypeId,
+                        SelectedManufacturer.ManufacturerId,
+                        result.Value.Name,
+                        result.Value.NativeName,
+                        result.Value.EngineCount,
+                        result.Value.EngineModels);
+
+                    Models.Add(newModel);
+                    SelectedModel = newModel;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to save aircraft model: {ex.Message}");
+                }
+                finally
+                {
+                    _statusService.IsBusy = false;
+                    _statusService.StatusMessage = string.Empty;
+                }
+            }
+        }
+
+        private async Task AddToFleetAsync()
+        {
+            if (SelectedModel == null) return;
+
+            _statusService.IsBusy = true;
+            _statusService.StatusMessage = $"Adding {SelectedModel.AircraftName} to Fleet...";
+
+            try
+            {
+                var newSimPlane = await _aircraftServices.AddSimAircraftAsync(SelectedModel.AircraftModelId);
+
+                if (newSimPlane != null)
+                {
+                    Fleet.Add(newSimPlane); // Adds it to Tab 1 instantly
+                    SelectedSimAircraft = newSimPlane;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to add to fleet: {ex.Message}");
+            }
+            finally
+            {
+                _statusService.IsBusy = false;
+                _statusService.StatusMessage = string.Empty;
+            }
+        }
     }
 }

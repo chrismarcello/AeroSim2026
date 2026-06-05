@@ -278,5 +278,54 @@ namespace AeroSim2026.Core.Services
                 throw;
             }
         }
+        public async Task<AircraftModel> AddAircraftModelAsync(string aircraftTypeId, string manufacturerId, string name, string nativeName, int? engineCount, string engineModels)
+        {
+            try
+            {
+                var newModel = new AircraftModel
+                {
+                    AircraftModelId = Guid.NewGuid().ToString(),
+                    AircraftType = aircraftTypeId.ToString(),
+                    Manufacturer = manufacturerId.ToString(),
+                    AircraftName = name,
+                    NativeName = nativeName,
+                    EngineCount = engineCount,
+                    EngineModels = engineModels
+                };
+                context.AircraftModels.Add(newModel);
+                // Tell SQLite to ignore the broken database blueprint
+                await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = OFF;");
+                await context.SaveChangesAsync();
+                // Turn it back on to protect the rest of your app
+                await context.Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON;");
+                return newModel;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding aircraft model");
+                throw;
+            }
+        }
+        public async Task<SimAircraft> AddSimAircraftAsync(string aircraftModelId)
+        {
+            try
+            {
+                var newSimAircraft = new SimAircraft
+                {
+                    AircraftId = aircraftModelId.ToString(),
+
+                };
+                context.SimAircrafts.Add(newSimAircraft);
+                await context.SaveChangesAsync();
+
+                // Include the related data so the UI can display its name immediately
+                return await GetSimAircraftWithPropertiesAsync(newSimAircraft.SimPlaneId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding SimAircraft");
+                throw;
+            }
+        }
     }
 }

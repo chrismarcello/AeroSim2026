@@ -17,5 +17,7 @@ namespace AeroSim2026.Core.Services
         Task<List<string>> GetDistinctAircraftFamiliesAsync();
         Task<List<string>> GetDistinctEngineFamiliesAsync();
         Task<AircraftType> AddAircraftTypeAsync(string manufacturerId, string name, string typeCode, string aircraftFamily, string engineFamily);
+        Task<AircraftModel> AddAircraftModelAsync(string aircraftTypeId, string manufacturerId, string name, string nativeName, int? engineCount, string engineModels);
+        Task<SimAircraft> AddSimAircraftAsync(string aircraftModelId);
     }
 }

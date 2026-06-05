@@ -23,6 +23,8 @@ public partial class AircraftManagerView : ReactiveUserControl<AircraftManagerVi
                 d(ViewModel.ShowAddManufacturerDialog.RegisterHandler(interaction => DoShowAddDialogAsync(interaction)));
 
                 d(ViewModel.ShowAddTypeDialog.RegisterHandler(interaction => DoShowAddTypeDialogAsync(interaction)));
+
+                d(ViewModel.ShowAddModelDialog.RegisterHandler(interaction => DoShowAddModelDialogAsync(interaction)));
             }
         
         });
@@ -52,6 +54,18 @@ public partial class AircraftManagerView : ReactiveUserControl<AircraftManagerVi
 
         var parentWindow = TopLevel.GetTopLevel(this) as Window;
         var result = await dialog.ShowDialog<(string, string, string, string)?>(parentWindow!);
+
+        interaction.SetOutput(result);
+    }
+    private async Task DoShowAddModelDialogAsync(IInteractionContext<AddAircraftModelViewModel, (string, string, int?, string)?> interaction)
+    {
+        var dialog = new AddAircraftModelWindow
+        {
+            DataContext = interaction.Input
+        };
+
+        var parentWindow = TopLevel.GetTopLevel(this) as Window;
+        var result = await dialog.ShowDialog<(string, string, int?, string)?>(parentWindow!);
 
         interaction.SetOutput(result);
     }

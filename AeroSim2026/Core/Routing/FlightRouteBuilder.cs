@@ -76,10 +76,23 @@ namespace AeroSim2026.Core.Routing
             // 4. Add the Enroute legs, passing the NavType!
             foreach (var edge in pathEdges)
             {
+                // Identify geometric "bend" nodes that don't have an official aviation name.
+                // In the database these show up as literally "NULL", or fallback to "FIX" in the Graph.
+                bool isUnnamedNode = string.IsNullOrWhiteSpace(edge.TargetNode!.Identifier) ||
+                                     edge.TargetNode.Identifier.Equals("NULL", StringComparison.OrdinalIgnoreCase) ||
+                                     edge.TargetNode.Identifier.Equals("FIX", StringComparison.OrdinalIgnoreCase);
+
+                // If it's just a bend in the airway, skip saving it. 
+                // The algorithm will naturally jump to the next named waypoint on this same airway!
+                if (isUnnamedNode)
+                {
+                    continue;
+                }
+
                 routeList.Add(new FlightPlanRoute
                 {
                     SequenceNumber = sequence++,
-                    WaypointId = edge.TargetNode.WaypointId,
+                    WaypointId = edge.TargetNode!.WaypointId,
                     AirwayId = edge.AirwayId,
                     Airway = edge.AirwayId.HasValue ? new Airway
                     {

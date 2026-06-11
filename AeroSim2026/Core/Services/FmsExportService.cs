@@ -59,15 +59,16 @@ namespace AeroSim2026.Core.Services
                             airwayName = routeItem.Airway.AirwayName;
                         }
 
-                        int typeId = 28; // Default to GPS // LatLon
+                        int typeId = 11; // Default to GPS // LatLon
                         string wpType = routeItem.Waypoint.WaypointType?.ToUpper() ?? "";
 
                         if (wpType.Contains("VOR"))
                             typeId = 3;
                         else if (wpType.Contains("NDB"))
                             typeId = 2;
-                        else if (wpType.Contains("INTERSECTION") || wpType.Contains("WAYPOINT") || wpType.Contains("FIX"))
-                            typeId = 11;
+                        // Optional: Only use 28 if it is explicitly marked as a custom GPS coordinate
+                        else if (wpType.Contains("GPS") || wpType.Contains("LATLON"))
+                            typeId = 28;
 
                         fmsBuilder.AppendLine($"{typeId} {routeItem.Waypoint.Ident} {airwayName} {routeItem.PlannedAltitude:0.000000} {routeItem.Waypoint.Laty} {routeItem.Waypoint.Lonx}");
                     }

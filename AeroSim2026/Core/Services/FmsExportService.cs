@@ -49,26 +49,30 @@ namespace AeroSim2026.Core.Services
                 fmsBuilder.AppendLine($"NUMENR {totalWaypoints}");
                 fmsBuilder.AppendLine($"1 {origin.Ident} ADEP {origin.Altitude:0.000000} {origin.Laty} {origin.Lonx}");
 
-                foreach (var routeItem in routeList)
+                // Use a for-loop so we can look ahead to the next waypoint!
+                for (int i = 0; i < routeList.Count; i++)
                 {
+                    var routeItem = routeList[i];
                     if (routeItem.Waypoint != null)
                     {
                         string airwayName = "DRCT";
-                        if (routeItem.Airway != null && !string.IsNullOrWhiteSpace(routeItem.Airway.AirwayName))
+
+                        // THE FIX: Look ahead to the NEXT waypoint to get the DEPARTURE airway
+                        if (i < routeList.Count - 1)
                         {
-                            airwayName = routeItem.Airway.AirwayName;
+                            var nextItem = routeList[i + 1];
+                            if (nextItem.Airway != null && !string.IsNullOrWhiteSpace(nextItem.Airway.AirwayName))
+                            {
+                                airwayName = nextItem.Airway.AirwayName;
+                            }
                         }
 
-                        int typeId = 11; // Default to GPS // LatLon
+                        int typeId = 11; // Default to Database Intersection/FIX
                         string wpType = routeItem.Waypoint.WaypointType?.ToUpper() ?? "";
 
-                        if (wpType.Contains("VOR"))
-                            typeId = 3;
-                        else if (wpType.Contains("NDB"))
-                            typeId = 2;
-                        // Optional: Only use 28 if it is explicitly marked as a custom GPS coordinate
-                        else if (wpType.Contains("GPS") || wpType.Contains("LATLON"))
-                            typeId = 28;
+                        if (wpType.Contains("VOR")) typeId = 3;
+                        else if (wpType.Contains("NDB")) typeId = 2;
+                        else if (wpType.Contains("GPS") || wpType.Contains("LATLON")) typeId = 28;
 
                         fmsBuilder.AppendLine($"{typeId} {routeItem.Waypoint.Ident} {airwayName} {routeItem.PlannedAltitude:0.000000} {routeItem.Waypoint.Laty} {routeItem.Waypoint.Lonx}");
                     }

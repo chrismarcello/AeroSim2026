@@ -111,10 +111,24 @@ namespace AeroSim2026.Core.Routing
 
                     double tentativeG = gScore[current.WaypointId] + edgeCost;
 
+                    // Check if the current node is an unnamed geometry bend
+                    bool isCurrentUnnamed = string.IsNullOrWhiteSpace(current.Identifier) ||
+                                            current.Identifier.Equals("NULL", StringComparison.OrdinalIgnoreCase) ||
+                                            current.Identifier.Equals("FIX", StringComparison.OrdinalIgnoreCase);
+
                     if (cameFrom.TryGetValue(current.WaypointId, out var previousStep))
                     {
-                        if (previousStep.edge.AirwayId != edge.AirwayId && edge.AirwayId != null)
-                            tentativeG += switchPenalty;
+                        if (previousStep.edge.AirwayId != edge.AirwayId)
+                        {
+                            // Aviation rule: cannot switch airways at an unnamed geometry bend
+                            if (!isCurrentUnnamed)
+                            {
+                                continue; // Skip this edge, as it violates the airway switching rule
+                            }
+
+                            if (edge.AirwayId != null)
+                                tentativeG += switchPenalty; // Add penalty for switching airways
+                        }
                     }
 
                     if (!gScore.ContainsKey(neighbor.WaypointId) || tentativeG < gScore[neighbor.WaypointId])

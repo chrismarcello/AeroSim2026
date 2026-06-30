@@ -46,6 +46,7 @@ namespace AeroSim2026.Core.Routing
             int sequence = 1;
             var entryNode = _connectionManager.FindOptimalEntryNode(origin, destination);
             var exitNode = _connectionManager.FindOptimalExitNode(origin, destination);
+            bool hadUnnamedSkip = false;
 
             if (entryNode == null || exitNode == null)
             {
@@ -86,8 +87,13 @@ namespace AeroSim2026.Core.Routing
                 // The algorithm will naturally jump to the next named waypoint on this same airway!
                 if (isUnnamedNode)
                 {
+                    hadUnnamedSkip = true;
                     continue;
                 }
+
+                // If we skipped a bend to get here, LNM can't validate this as a direct airway
+                // leg — use DRCT instead so it doesn't try.
+                bool useAirway = !hadUnnamedSkip && edge.AirwayId.HasValue;
 
                 routeList.Add(new FlightPlanRoute
                 {
@@ -109,6 +115,8 @@ namespace AeroSim2026.Core.Routing
                         WaypointType = edge.TargetNode.NavType // <--- The UI needs this for the SVG!
                     }
                 });
+
+                hadUnnamedSkip = false; // reset for the next leg
             }
 
             ApplyVnavProfiles(origin, destination, routeList, cruiseAltitude);
@@ -191,14 +199,23 @@ namespace AeroSim2026.Core.Routing
 
                 if (routeList[i].Airway != null)
                 {
-                    if (routeList[i].Airway.MinimumAltitude.HasValue)
+                    // THE FIX: Does our descent profile require us to drop below the airway's safe minimum?
+                    if (routeList[i].Airway.MinimumAltitude.HasValue && calculatedAlt < routeList[i].Airway.MinimumAltitude!.Value)
                     {
-                        calculatedAlt = Math.Max(calculatedAlt, routeList[i].Airway.MinimumAltitude!.Value);
+                        // AVIATION RULE: We must leave the airway to safely descend to the runway!
+                        // Convert this leg to a Direct (DCT) routing so we don't trigger an Airway MEA violation.
+                        routeList[i].Airway = null;
+                        routeList[i].AirwayId = null;
+                        //routeList[i].Airway.AirwayName = "DCT";
                     }
-
-                    if (routeList[i].Airway.MaximumAltitude.HasValue)
+                    else
                     {
-                        calculatedAlt = Math.Min(calculatedAlt, routeList[i].Airway.MaximumAltitude!.Value);
+                        // We are safely at cruise, enforce the airway minimums and maximums!
+                        if (routeList[i].Airway.MinimumAltitude.HasValue)
+                            calculatedAlt = Math.Max(calculatedAlt, routeList[i].Airway.MinimumAltitude!.Value);
+
+                        if (routeList[i].Airway.MaximumAltitude.HasValue)
+                            calculatedAlt = Math.Min(calculatedAlt, routeList[i].Airway.MaximumAltitude!.Value);
                     }
                 }
 

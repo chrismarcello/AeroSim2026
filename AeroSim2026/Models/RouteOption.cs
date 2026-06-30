@@ -23,7 +23,7 @@ namespace AeroSim2026.Models
     }
     public class ProposedRoute
     {
-        public string RouteName { get; set; }
+        public string? RouteName { get; set; }
         public double TotalDistance { get; set; }
         public List<RouteLeg> Legs { get; set; } = new();
     }
@@ -31,8 +31,10 @@ namespace AeroSim2026.Models
     {
         public int SequenceNumber { get; set; }
         public RouteNode Waypoint { get; set; } = null!;
-        public string AirwayName { get; set; }
+        public string? AirwayName { get; set; }
         public int? AirwayId { get; set; }
+        public int? MinimumAltitude { get; set; }
+        public int? MaximumAltitude { get; set; }
         public double DistanceFromPrevious { get; set; }
         public double CumulativeDistance { get; set; }
     }

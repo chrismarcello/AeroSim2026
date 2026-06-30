@@ -15,8 +15,6 @@ namespace AeroSim2026.Core.Routing
         /// <summary>
         /// Loads DB data into the in-memory graph structure. This should be called once at startup or when data changes.
         /// </summary>
-        /// 
-        // In RoutingGraph.cs
         public void BuildGraph(List<Airway> allAirways, Dictionary<int, string> navTypeLookup = null!)
         {
             _nodes.Clear();
@@ -25,7 +23,7 @@ namespace AeroSim2026.Core.Routing
             {
                 if (navTypeLookup != null && navTypeLookup.TryGetValue(waypointId, out var mappedType))
                 {
-                    return mappedType;
+                    return mappedType ?? "W";
                 }
                 return defaultWp?.WaypointType ?? "W";
             }
@@ -38,9 +36,9 @@ namespace AeroSim2026.Core.Routing
                     _nodes[airway.FromWaypointId] = new RouteNode
                     {
                         WaypointId = airway.FromWaypointId,
-                        Identifier = airway.FromWaypoint?.Ident ?? "FIX",
-                        Latitude = airway.FromLaty,
-                        Longitude = airway.FromLonx,
+                        Identifier = airway.FromWaypoint?.Ident ?? "NULL",
+                        Latitude = airway.FromWaypoint?.Laty ?? 0,
+                        Longitude = airway.FromWaypoint?.Lonx ?? 0,
                         NavType = GetTrueNavType(airway.FromWaypointId, airway.FromWaypoint!)
                     };
                 }
@@ -51,101 +49,78 @@ namespace AeroSim2026.Core.Routing
                     _nodes[airway.ToWaypointId] = new RouteNode
                     {
                         WaypointId = airway.ToWaypointId,
-                        Identifier = airway.ToWaypoint?.Ident ?? "FIX",
-                        Latitude = airway.ToLaty,
-                        Longitude = airway.ToLonx,
+                        Identifier = airway.ToWaypoint?.Ident ?? "NULL",
+                        Latitude = airway.ToWaypoint?.Laty ?? 0,
+                        Longitude = airway.ToWaypoint?.Lonx ?? 0,
                         NavType = GetTrueNavType(airway.ToWaypointId, airway.ToWaypoint!)
                     };
                 }
 
-                // 3. Connect them!
+                double distance = GeoMath.Distance(
+                    _nodes[airway.FromWaypointId].Latitude,
+                    _nodes[airway.FromWaypointId].Longitude,
+                    _nodes[airway.ToWaypointId].Latitude,
+                    _nodes[airway.ToWaypointId].Longitude);
+
+                // 3. Add Edges (Directional Logic to respect One-Way Jet Routes)
                 var startNode = _nodes[airway.FromWaypointId];
                 var endNode = _nodes[airway.ToWaypointId];
 
-                double dist = GeoMath.Distance(startNode.Latitude, startNode.Longitude, endNode.Latitude, endNode.Longitude);
+                // Safely checks for null or empty without needing the '?.' operator
+                string direction = string.IsNullOrEmpty(airway.Direction) ? "N" : airway.Direction.ToUpper();
 
-                // Forward direction
-                startNode.OutgoingEdges.Add(new RouteEdge
+                // Forward Direction (From -> To)
+                // Allowed as long as the direction is NOT explicitly "B" (Backward)
+                if (direction != "B")
                 {
-                    TargetNode = endNode,
-                    Distance = dist,
-                    AirwayId = airway.AirwayId,
-                    AirwayName = airway.AirwayName,
-                    MinimumAltitude = airway.MinimumAltitude,
-                    MaximumAltitude = airway.MaximumAltitude
-                });
-
-                // Reverse direction (CRITICAL: Airways must be bidirectional so A* can travel south!)
-                endNode.OutgoingEdges.Add(new RouteEdge
-                {
-                    TargetNode = startNode,
-                    Distance = dist,
-                    AirwayId = airway.AirwayId,
-                    AirwayName = airway.AirwayName,
-                    MinimumAltitude = airway.MinimumAltitude,
-                    MaximumAltitude = airway.MaximumAltitude
-                });
-            }
-            // Convert dictionary values to an array for faster iteration
-            var allNodes = _nodes.Values.ToArray();
-
-            double cellSizeDeg = MaxDirectHopNm / 60.0;
-
-            var grid = new Dictionary<(int x, int y), List<RouteNode>>();
-
-            // 1. Drop every node into its appropriate grid cell
-            foreach (var node in _nodes.Values)
-            {
-                int cellX = (int)Math.Floor(node.Longitude / cellSizeDeg);
-                int cellY = (int)Math.Floor(node.Latitude / cellSizeDeg);
-                var key = (cellX, cellY);
-
-                if (!grid.TryGetValue(key, out var cellList))
-                {
-                    cellList = new List<RouteNode>();
-                    grid[key] = cellList;
-                }
-                cellList.Add(node);
-            }
-            // 2. Process each cell
-            foreach (var kvp in grid)
-            {
-                var (cx, cy) = kvp.Key;
-                var cellNodes = kvp.Value;
-
-                for (int i = 0; i < cellNodes.Count; i++) 
-                {
-                    var nodeA = cellNodes[i];
-                    for (int j = 0; j < cellNodes.Count; j++)
+                    startNode.OutgoingEdges.Add(new RouteEdge
                     {
-                        var nodeB = cellNodes[j];
-                        CheckAndAddDirectEdge(nodeA, nodeB);
-                    }
+                        TargetNode = endNode,
+                        AirwayName = airway.AirwayName,
+                        AirwayId = airway.AirwayId,
+                        Distance = distance,
+                        MinimumAltitude = airway.MinimumAltitude,
+                        MaximumAltitude = airway.MaximumAltitude
+                    });
                 }
-                // Step B: Compare nodes against adjacent cells. 
-                // We only check 4 directions (East, South-East, South, South-West) 
-                // to prevent double-counting connections we already made from the other side!
-                (int, int)[] neighborOffsets = { (1, 0), (1, -1), (0, -1), (-1, -1) };
 
-                foreach (var offset in neighborOffsets)
+                // Backward Direction (To -> From)
+                // Allowed as long as the direction is NOT explicitly "F" (Forward)
+                if (direction != "F")
                 {
-                    int nx = cx + offset.Item1;
-                    int ny = cy + offset.Item2;
-                    var neighborKey = (nx, ny);
-
-                    if (grid.TryGetValue(neighborKey, out var neighborNodes))
+                    endNode.OutgoingEdges.Add(new RouteEdge
                     {
-                        foreach (var nodeA in cellNodes)
+                        TargetNode = startNode,
+                        AirwayName = airway.AirwayName,
+                        AirwayId = airway.AirwayId,
+                        Distance = distance,
+                        MinimumAltitude = airway.MinimumAltitude,
+                        MaximumAltitude = airway.MaximumAltitude
+                    });
+                }
+            }
+
+            var nodeList = _nodes.Values.ToList();
+            for (int i = 0; i < nodeList.Count; i++)
+            {
+                for (int j = i + 1; j < nodeList.Count; j++)
+                {
+                    var nodeA = nodeList[i];
+                    var nodeB = nodeList[j];
+
+                    // Only check DCT for named VORs/NDBs to prevent massive memory spikes
+                    if (nodeA.Identifier != "NULL" && nodeB.Identifier != "NULL")
+                    {
+                        // THE FIX: Added safe null checking (?.) to permanently clear the CS8602 warning
+                        if ((nodeA.NavType?.Contains("V") == true) || (nodeB.NavType?.Contains("V") == true))
                         {
-                            foreach (var nodeB in neighborNodes)
-                            {
-                                CheckAndAddDirectEdge(nodeA, nodeB);
-                            }
+                            CheckAndAddDirectEdge(nodeA, nodeB);
                         }
                     }
                 }
             }
         }
+
         // A quick helper method to keep the loops clean
         private void CheckAndAddDirectEdge(RouteNode nodeA, RouteNode nodeB)
         {
@@ -173,6 +148,7 @@ namespace AeroSim2026.Core.Routing
                 });
             }
         }
+
         public RouteNode GetNode(int waypointId)
         {
             return _nodes.ContainsKey(waypointId) ? _nodes[waypointId] : null!;

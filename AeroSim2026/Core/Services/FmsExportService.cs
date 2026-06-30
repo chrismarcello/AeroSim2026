@@ -49,28 +49,20 @@ namespace AeroSim2026.Core.Services
                 fmsBuilder.AppendLine($"NUMENR {totalWaypoints}");
                 fmsBuilder.AppendLine($"1 {origin.Ident} ADEP {origin.Altitude:0.000000} {origin.Laty} {origin.Lonx}");
 
-                // Use a for-loop so we can look ahead to the next waypoint!
-                for (int i = 0; i < routeList.Count; i++)
+                foreach (var routeItem in routeList)
                 {
-                    var routeItem = routeList[i];
                     if (routeItem.Waypoint != null)
                     {
                         string airwayName = "DRCT";
-
-                        // THE FIX: Look ahead to the NEXT waypoint to get the DEPARTURE airway
-                        if (i < routeList.Count - 1)
+                        if (routeItem.Airway != null && !string.IsNullOrWhiteSpace(routeItem.Airway.AirwayName))
                         {
-                            var nextItem = routeList[i + 1];
-                            if (nextItem.Airway != null && !string.IsNullOrWhiteSpace(nextItem.Airway.AirwayName))
-                            {
-                                airwayName = nextItem.Airway.AirwayName;
-                            }
+                            airwayName = routeItem.Airway.AirwayName;
                         }
 
                         int typeId = 11; // Default to Database Intersection/FIX
                         string wpType = routeItem.Waypoint.WaypointType?.ToUpper() ?? "";
 
-                        if (wpType.Contains("VOR")) typeId = 3;
+                        if (wpType.Contains("VOR") || wpType.Equals("V")) typeId = 3;
                         else if (wpType.Contains("NDB")) typeId = 2;
                         else if (wpType.Contains("GPS") || wpType.Contains("LATLON")) typeId = 28;
 

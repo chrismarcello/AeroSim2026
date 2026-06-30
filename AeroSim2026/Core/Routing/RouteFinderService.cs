@@ -86,8 +86,8 @@ namespace AeroSim2026.Core.Routing
                             continue; // Skip this airway, force A* to find a lower/closer alternative
                         }
                     }
-                    if (edge.MinimumAltitude.HasValue && cruiseAltitude < edge.MinimumAltitude.Value) continue;
-                    if (edge.MaximumAltitude.HasValue && cruiseAltitude > edge.MaximumAltitude.Value) continue;
+                    //if (edge.MinimumAltitude.HasValue && cruiseAltitude < edge.MinimumAltitude.Value) continue;
+                    //if (edge.MaximumAltitude.HasValue && cruiseAltitude > edge.MaximumAltitude.Value) continue;
 
                     // if we are within 80NM of the destingation, reject high altitude airways that would be inefficient for short hops
                     //double distToDest = GeoMath.Distance(neighbor.Latitude, neighbor.Longitude, endNode.Latitude, endNode.Longitude);
@@ -121,7 +121,7 @@ namespace AeroSim2026.Core.Routing
                         if (previousStep.edge.AirwayId != edge.AirwayId)
                         {
                             // Aviation rule: cannot switch airways at an unnamed geometry bend
-                            if (!isCurrentUnnamed)
+                            if (isCurrentUnnamed)
                             {
                                 continue; // Skip this edge, as it violates the airway switching rule
                             }
@@ -186,6 +186,8 @@ namespace AeroSim2026.Core.Routing
                     Waypoint = edge.TargetNode!,
                     AirwayName = edge.AirwayName!,
                     AirwayId = edge.AirwayId,
+                    MinimumAltitude = edge.MinimumAltitude,
+                    MaximumAltitude = edge.MaximumAltitude,
                     DistanceFromPrevious = edge.Distance,
                     CumulativeDistance = cumulative
                 });
